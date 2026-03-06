@@ -1,0 +1,19 @@
+{{define "title"}}Help Topics{{end}}
+{{define "content"}}
+<h1>Help Topics <span class="badge">{{len .Topics}} {{pluralise (len .Topics) "topic" "topics"}}</span></h1>
+
+{{if .Groups}}
+{{range .Groups}}
+<h2><span class="tag">{{.Tag}}</span></h2>
+{{range .Topics}}
+<div class="card">
+    <h3><a href="/topics/{{.ID}}">{{.Title}}</a></h3>
+    {{if .Tags}}<div>{{range .Tags}}<span class="tag">{{.}}</span>{{end}}</div>{{end}}
+    {{if .Content}}<p>{{truncate .Content 120}}</p>{{end}}
+</div>
+{{end}}
+{{end}}
+{{else}}
+<p style="color: var(--fg-muted);">No topics available.</p>
+{{end}}
+{{end}}
