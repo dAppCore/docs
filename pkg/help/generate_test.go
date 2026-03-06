@@ -127,7 +127,7 @@ func TestGenerate_Good_404Exists(t *testing.T) {
 
 	html := string(content)
 	assert.Contains(t, html, "404")
-	assert.Contains(t, html, "not found")
+	assert.Contains(t, html, "Not Found")
 }
 
 func TestGenerate_Good_EmptyDir(t *testing.T) {

@@ -34,22 +34,19 @@ func Generate(catalog *Catalog, outputDir string) error {
 	}
 
 	// 1. index.html
-	if err := writeStaticPage(outputDir, "index.html", "index.html", indexData{
-		Topics: topics,
-		Groups: groupTopicsByTag(topics),
-	}); err != nil {
+	if err := writeFile(outputDir, "index.html", RenderIndexPage(topics)); err != nil {
 		return err
 	}
 
 	// 2. topics/{id}.html -- one per topic
 	for _, t := range topics {
-		if err := writeStaticPage(topicsDir, t.ID+".html", "topic.html", topicData{Topic: t}); err != nil {
+		if err := writeFile(topicsDir, t.ID+".html", RenderTopicPage(t, topics)); err != nil {
 			return err
 		}
 	}
 
 	// 3. search.html -- client-side search page
-	if err := writeSearchPage(outputDir); err != nil {
+	if err := writeFile(outputDir, "search.html", RenderSearchPage("", nil)+clientSearchScript); err != nil {
 		return err
 	}
 
@@ -59,23 +56,17 @@ func Generate(catalog *Catalog, outputDir string) error {
 	}
 
 	// 5. 404.html
-	if err := writeStaticPage(outputDir, "404.html", "404.html", nil); err != nil {
+	if err := writeFile(outputDir, "404.html", Render404Page()); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// writeStaticPage renders a template page to a file.
-func writeStaticPage(dir, filename, templatePage string, data any) error {
+// writeFile writes content to a file in the given directory.
+func writeFile(dir, filename, content string) error {
 	path := filepath.Join(dir, filename)
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return renderPage(f, templatePage, data)
+	return os.WriteFile(path, []byte(content), 0o644)
 }
 
 // writeSearchIndex writes the JSON search index for client-side search.
@@ -106,28 +97,6 @@ func writeSearchIndex(outputDir string, topics []*Topic) error {
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
 	return enc.Encode(entries)
-}
-
-// writeSearchPage generates search.html with inline client-side JS search.
-// The JS uses escapeHTML() on all data before DOM insertion to prevent XSS.
-// Data comes from our own search-index.json, not external user input.
-func writeSearchPage(outputDir string) error {
-	path := filepath.Join(outputDir, "search.html")
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	// Render via a search template with empty results + inject client-side JS.
-	data := searchData{Query: "", Results: nil}
-	if err := renderPage(f, "search.html", data); err != nil {
-		return err
-	}
-
-	// Append inline script for client-side search.
-	_, err = f.WriteString(clientSearchScript)
-	return err
 }
 
 // clientSearchScript is the inline JS for static-site client-side search.
