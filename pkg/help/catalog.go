@@ -2,9 +2,13 @@ package help
 
 import (
 	"fmt"
+	"io/fs"
 	"iter"
 	"maps"
+	"os"
+	"path/filepath"
 	"slices"
+	"strings"
 )
 
 // Catalog manages help topics.
@@ -88,6 +92,44 @@ func (c *Catalog) Search(query string) []*SearchResult {
 // SearchResults returns an iterator for search results.
 func (c *Catalog) SearchResults(query string) iter.Seq[*SearchResult] {
 	return slices.Values(c.Search(query))
+}
+
+// LoadContentDir recursively loads all .md files from a directory into a Catalog.
+func LoadContentDir(dir string) (*Catalog, error) {
+	c := &Catalog{
+		topics: make(map[string]*Topic),
+		index:  newSearchIndex(),
+	}
+
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if !strings.HasSuffix(strings.ToLower(d.Name()), ".md") {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("reading %s: %w", path, err)
+		}
+
+		topic, err := ParseTopic(path, content)
+		if err != nil {
+			return fmt.Errorf("parsing %s: %w", path, err)
+		}
+
+		c.Add(topic)
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("walking directory %s: %w", dir, err)
+	}
+
+	return c, nil
 }
 
 // Get returns a topic by ID.

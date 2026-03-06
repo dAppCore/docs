@@ -2,6 +2,8 @@ package help
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -174,6 +176,42 @@ func TestCatalog_Search_Good_ScoreTiebreaking(t *testing.T) {
 	assert.Equal(t, "Zebra", results[1].Topic.Title)
 	assert.Equal(t, results[0].Score, results[1].Score,
 		"scores should be equal for tie-breaking to apply")
+}
+
+func TestCatalog_LoadContentDir_Good(t *testing.T) {
+	dir := t.TempDir()
+	os.MkdirAll(filepath.Join(dir, "cli"), 0o755)
+	os.WriteFile(filepath.Join(dir, "cli", "dev-work.md"), []byte("---\ntitle: Dev Work\ntags: [cli, dev]\n---\n\n## Usage\n\ncore dev work syncs your workspace.\n"), 0o644)
+	os.WriteFile(filepath.Join(dir, "cli", "setup.md"), []byte("---\ntitle: Setup\ntags: [cli]\n---\n\n## Installation\n\nRun core setup to get started.\n"), 0o644)
+
+	catalog, err := LoadContentDir(dir)
+	require.NoError(t, err)
+	assert.Len(t, catalog.List(), 2)
+
+	devWork, err := catalog.Get("dev-work")
+	require.NoError(t, err)
+	assert.Equal(t, "Dev Work", devWork.Title)
+	assert.Contains(t, devWork.Tags, "cli")
+
+	results := catalog.Search("workspace")
+	assert.NotEmpty(t, results)
+}
+
+func TestCatalog_LoadContentDir_Good_Empty(t *testing.T) {
+	dir := t.TempDir()
+	catalog, err := LoadContentDir(dir)
+	require.NoError(t, err)
+	assert.Empty(t, catalog.List())
+}
+
+func TestCatalog_LoadContentDir_Good_SkipsNonMd(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("not markdown"), 0o644)
+	os.WriteFile(filepath.Join(dir, "topic.md"), []byte("---\ntitle: Topic\n---\n\nContent here.\n"), 0o644)
+
+	catalog, err := LoadContentDir(dir)
+	require.NoError(t, err)
+	assert.Len(t, catalog.List(), 1)
 }
 
 func BenchmarkSearch(b *testing.B) {
