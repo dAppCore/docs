@@ -62,14 +62,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	topics := s.catalog.List()
-	data := indexData{
-		Topics: topics,
-		Groups: groupTopicsByTag(topics),
-	}
-
-	if err := renderPage(w, "index.html", data); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	_, _ = w.Write([]byte(RenderIndexPage(topics)))
 }
 
 func (s *Server) handleTopic(w http.ResponseWriter, r *http.Request) {
@@ -80,14 +73,12 @@ func (s *Server) handleTopic(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusNotFound)
-		_ = renderPage(w, "404.html", nil)
+		_, _ = w.Write([]byte(Render404Page()))
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := renderPage(w, "topic.html", topicData{Topic: topic}); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	_, _ = w.Write([]byte(RenderTopicPage(topic, s.catalog.List())))
 }
 
 func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
@@ -102,14 +93,7 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	results := s.catalog.Search(query)
-	data := searchData{
-		Query:   query,
-		Results: results,
-	}
-
-	if err := renderPage(w, "search.html", data); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	_, _ = w.Write([]byte(RenderSearchPage(query, results)))
 }
 
 // --- JSON API handlers ---
