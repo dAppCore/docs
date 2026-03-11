@@ -1,37 +1,86 @@
-# go-i18n
+---
+title: go-i18n Grammar Engine
+description: Grammar-aware internationalisation for Go with forward composition and reverse decomposition.
+---
 
-Grammar engine for Go.
+# go-i18n Grammar Engine
 
-**Module**: `forge.lthn.ai/core/go-i18n`
+`forge.lthn.ai/core/go-i18n` is a **grammar engine** for Go. Unlike flat key-value translation systems, it composes grammatically correct output from verbs, nouns, and articles -- and can reverse the process, decomposing inflected text back into base forms with grammatical metadata.
 
-Provides forward composition primitives (PastTense, Gerund, Pluralize, Article, composite progress and label functions), a `T()` translation entry point with namespace key handlers, and a reversal engine that recovers base forms and grammatical roles from inflected text. The reversal package produces `GrammarImprint` feature vectors for semantic similarity scoring, builds reference domain distributions, performs anomaly detection, and includes a 1B model pre-sort pipeline for training data classification.
+This is the foundation for the Poindexter classification pipeline and the LEM scoring system.
+
+## Architecture
+
+| Layer | Package | Purpose |
+|-------|---------|---------|
+| Forward | Root (`i18n`) | Compose grammar-aware messages: `T()`, `PastTense()`, `Gerund()`, `Pluralize()`, `Article()` |
+| Reverse | `reversal/` | Decompose text back to base forms with tense/number metadata |
+| Imprint | `reversal/` | Lossy feature vector projection for grammar fingerprinting |
+| Multiply | `reversal/` | Deterministic training data augmentation |
+| Classify | Root (`i18n`) | 1B model domain classification pipeline |
+| Data | `locales/` | Grammar tables (JSON) -- only `gram.*` data |
 
 ## Quick Start
 
 ```go
-import "forge.lthn.ai/core/go-i18n"
+import i18n "forge.lthn.ai/core/go-i18n"
 
-// Grammar primitives
-fmt.Println(i18n.PastTense("delete"))   // "deleted"
-fmt.Println(i18n.Gerund("build"))       // "building"
-fmt.Println(i18n.Pluralize("file", 3))  // "files"
+// Initialise the default service (uses embedded en.json)
+svc, err := i18n.New()
+i18n.SetDefault(svc)
 
-// Translation with auto-composed output
-fmt.Println(i18n.T("i18n.progress.build"))  // "Building..."
-fmt.Println(i18n.T("i18n.done.delete", "file"))  // "File deleted"
-
-// Reversal: recover grammar from text
-tokeniser := reversal.NewTokeniser()
-tokens := tokeniser.Tokenise("deleted the files")
-imprint := reversal.NewImprint(tokens)
+// Forward composition
+i18n.T("i18n.progress.build")          // "Building..."
+i18n.T("i18n.done.delete", "cache")    // "Cache deleted"
+i18n.T("i18n.count.file", 5)           // "5 files"
+i18n.PastTense("commit")               // "committed"
+i18n.Article("SSH")                     // "an"
 ```
 
-## Components
+```go
+import "forge.lthn.ai/core/go-i18n/reversal"
 
-| Component | Description |
-|-----------|-------------|
-| Forward | PastTense, Gerund, Pluralize, Article, progress/label composers |
-| `T()` | Translation entry point with namespace key handlers |
-| Reversal | Base form recovery, grammatical role detection |
-| GrammarImprint | Feature vectors for semantic similarity scoring |
-| 1B Pipeline | Training data pre-sort and classification |
+// Reverse decomposition
+tok := reversal.NewTokeniser()
+tokens := tok.Tokenise("Deleted the configuration files")
+
+// Grammar fingerprinting
+imp := reversal.NewImprint(tokens)
+sim := imp.Similar(otherImp) // 0.0-1.0
+
+// Training data augmentation
+m := reversal.NewMultiplier()
+variants := m.Expand("Delete the file") // 4-7 grammatical variants
+```
+
+## Documentation
+
+- [Forward API](forward-api.md) -- `T()`, grammar primitives, namespace handlers, Subject builder
+- [Reversal Engine](reversal.md) -- 3-tier tokeniser, matching, morphology rules, round-trip verification
+- [GrammarImprint](grammar-imprint.md) -- Lossy feature vectors, weighted cosine similarity, reference distributions
+- [Locale JSON Schema](locale-schema.md) -- `en.json` structure, grammar table contract, sacred rules
+- [Multiplier](multiplier.md) -- Deterministic variant generation, case preservation, round-trip guarantee
+
+## Key Design Decisions
+
+**Grammar engine, not translation file manager.** Consumers bring their own translations. go-i18n provides the grammatical composition and decomposition primitives.
+
+**3-tier lookup.** All grammar lookups follow the same pattern: JSON locale data (tier 1) takes precedence over irregular Go maps (tier 2), which take precedence over regular morphology rules (tier 3). This lets locale files override any built-in rule.
+
+**Round-trip verification.** The reversal engine verifies tier 3 candidates by applying the forward function and checking the result matches the original. This eliminates phantom base forms like "walke" or "processe".
+
+**Lossy imprints.** GrammarImprint intentionally discards content, preserving only grammatical structure. Two texts with similar grammar produce similar imprints regardless of subject matter. This is a privacy-preserving proxy for semantic similarity.
+
+## Running Tests
+
+```bash
+go test ./...                    # All tests
+go test -v ./reversal/           # Reversal engine tests
+go test -bench=. ./...           # Benchmarks
+```
+
+## Status
+
+- **Phase 1** (Harden): Dual-class disambiguation -- design approved, implementation in progress
+- **Phase 2** (Reference Distributions): 1B pre-classification pipeline + imprint calibration
+- **Phase 3** (Multi-Language): French grammar tables

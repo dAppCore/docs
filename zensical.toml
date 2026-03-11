@@ -211,6 +211,9 @@ nav = [
     {"IDE" = [
       "tools/ide/index.md",
     ]},
+    {"Lint" = [
+      "tools/lint/index.md",
+    ]},
     {"CLI" = [
       "tools/cli/index.md",
       {"Development" = [

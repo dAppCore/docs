@@ -1,98 +1,96 @@
-# Core Go
+---
+title: Core Go Framework
+description: Dependency injection and service lifecycle framework for Go.
+---
 
-Core is a Go framework for the host-uk ecosystem - build, release, and deploy Go, Wails, PHP, and container workloads.
+# Core Go Framework
+
+Core (`forge.lthn.ai/core/go`) is a dependency injection and service lifecycle framework for Go. It provides a typed service registry, lifecycle hooks, and a message-passing bus for decoupled communication between services.
+
+This is the foundation layer of the ecosystem. It has no CLI, no GUI, and minimal dependencies.
 
 ## Installation
 
 ```bash
-# Via Go (recommended)
-go install github.com/host-uk/core/cmd/core@latest
-
-# Or download binary from releases
-curl -Lo core https://github.com/host-uk/core/releases/latest/download/core-$(go env GOOS)-$(go env GOARCH)
-chmod +x core && sudo mv core /usr/local/bin/
-
-# Verify
-core doctor
+go get forge.lthn.ai/core/go
 ```
 
-See [Getting Started](getting-started.md) for all installation options including building from source.
+Requires Go 1.26 or later.
 
-## Command Reference
+## What It Does
 
-See [CLI](/build/cli/) for full command documentation.
+Core solves three problems that every non-trivial Go application eventually faces:
 
-| Command | Description |
-|---------|-------------|
-| [go](/build/cli/go/) | Go development (test, fmt, lint, cov) |
-| [php](/build/cli/php/) | Laravel/PHP development |
-| [build](/build/cli/build/) | Build Go, Wails, Docker, LinuxKit projects |
-| [ci](/build/cli/ci/) | Publish releases (dry-run by default) |
-| [sdk](/build/cli/sdk/) | SDK generation and validation |
-| [dev](/build/cli/dev/) | Multi-repo workflow + dev environment |
-| [pkg](/build/cli/pkg/) | Package search and install |
-| [vm](/build/cli/vm/) | LinuxKit VM management |
-| [docs](/build/cli/docs/) | Documentation management |
-| [setup](/build/cli/setup/) | Clone repos from registry |
-| [doctor](/build/cli/doctor/) | Check development environment |
+1. **Service wiring** -- how do you register, retrieve, and type-check services without import cycles?
+2. **Lifecycle management** -- how do you start and stop services in the right order?
+3. **Decoupled communication** -- how do services talk to each other without knowing each other's types?
 
-## Quick Start
+## Packages
 
-```bash
-# Go development
-core go test              # Run tests
-core go test --coverage   # With coverage
-core go fmt               # Format code
-core go lint              # Lint code
+| Package | Purpose |
+|---------|---------|
+| [`pkg/core`](services.md) | DI container, service registry, lifecycle, message bus |
+| `pkg/log` | Structured logger service with Core integration |
 
-# Build
-core build                # Auto-detect and build
-core build --targets linux/amd64,darwin/arm64
+## Quick Example
 
-# Release (dry-run by default)
-core ci                   # Preview release
-core ci --we-are-go-for-launch  # Actually publish
+```go
+package main
 
-# Multi-repo workflow
-core dev work             # Status + commit + push
-core dev work --status    # Just show status
+import (
+    "context"
+    "fmt"
 
-# PHP development
-core php dev              # Start dev environment
-core php test             # Run tests
+    "forge.lthn.ai/core/go/pkg/core"
+    "forge.lthn.ai/core/go/pkg/log"
+)
+
+func main() {
+    c, err := core.New(
+        core.WithName("log", log.NewService(log.Options{Level: log.LevelInfo})),
+        core.WithServiceLock(), // Prevent late registration
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    // Start all services
+    if err := c.ServiceStartup(context.Background(), nil); err != nil {
+        panic(err)
+    }
+
+    // Type-safe retrieval
+    logger, err := core.ServiceFor[*log.Service](c, "log")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println("Log level:", logger.Level())
+
+    // Shut down (reverse order)
+    _ = c.ServiceShutdown(context.Background())
+}
 ```
 
-## Configuration
+## Documentation
 
-Core uses `.core/` directory for project configuration:
+| Page | Covers |
+|------|--------|
+| [Getting Started](getting-started.md) | Creating a Core app, registering your first service |
+| [Services](services.md) | Service registration, `ServiceRuntime`, factory pattern |
+| [Lifecycle](lifecycle.md) | `Startable`/`Stoppable` interfaces, startup/shutdown order |
+| [Messaging](messaging.md) | ACTION, QUERY, PERFORM -- the message bus |
+| [Configuration](configuration.md) | `WithService`, `WithName`, `WithAssets`, `WithServiceLock` options |
+| [Testing](testing.md) | Test naming conventions, test helpers, fuzz testing |
+| [Errors](errors.md) | `E()` helper, `Error` struct, unwrapping |
 
-```
-.core/
-├── release.yaml    # Release targets and settings
-├── build.yaml      # Build configuration (optional)
-└── linuxkit/       # LinuxKit templates
-```
+## Dependencies
 
-And `repos.yaml` in workspace root for multi-repo management.
+Core is deliberately minimal:
 
-## Guides
+- `forge.lthn.ai/core/go-io` -- abstract storage (local, S3, SFTP, WebDAV)
+- `forge.lthn.ai/core/go-log` -- structured logging
+- `github.com/stretchr/testify` -- test assertions (test-only)
 
-- [Getting Started](getting-started.md) - Installation and first steps
-- [Workflows](workflows.md) - Common task sequences
-- [Troubleshooting](troubleshooting.md) - When things go wrong
-- [Migration](migration.md) - Moving from legacy tools
+## Licence
 
-## Reference
-
-- [Configuration](configuration.md) - All config options
-- [Glossary](glossary.md) - Term definitions
-
-## Claude Code Skill
-
-Install the skill to teach Claude Code how to use the Core CLI:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/host-uk/core/main/.claude/skills/core/install.sh | bash
-```
-
-See [skill/](skill/) for details.
+EUPL-1.2
