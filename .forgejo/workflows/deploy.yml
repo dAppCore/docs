@@ -1,0 +1,39 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Zensical
+        run: pip install zensical
+
+      - name: Build
+        run: zensical build
+
+      - name: Deploy to BunnyCDN
+        run: |
+          pip install s3cmd
+          cat > ~/.s3cfg <<EOCFG
+          [default]
+          access_key = $AWS_ACCESS_KEY_ID
+          secret_key = $AWS_SECRET_ACCESS_KEY
+          host_base = storage.bunnycdn.com
+          host_bucket = %(bucket)s.storage.bunnycdn.com
+          use_https = True
+          EOCFG
+          s3cmd sync site/ s3://core-help/ --delete-removed --acl-public
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BUNNY_STORAGE_ZONE }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BUNNY_STORAGE_KEY }}

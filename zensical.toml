@@ -1,0 +1,400 @@
+[project]
+site_name = "core.help"
+site_url = "https://core.help"
+site_description = "Documentation for the Core CLI, Go packages, PHP modules, and MCP tools"
+copyright = "Host UK — EUPL-1.2"
+docs_dir = "docs"
+
+nav = [
+  {"Home" = [
+    "index.md",
+    "getting-started.md",
+    "links.md",
+  ]},
+
+  {"Go" = [
+    "go/index.md",
+    {"Getting Started" = [
+      "go/getting-started.md",
+      "go/configuration.md",
+      "go/workflows.md",
+    ]},
+    {"Reference" = [
+      "go/migration.md",
+      "go/troubleshooting.md",
+      "go/glossary.md",
+    ]},
+    {"Packages" = [
+      "go/packages/index.md",
+      {"AI & ML" = [
+        "go/packages/go-ai.md",
+        "go/packages/go-ml.md",
+        "go/packages/go-mlx.md",
+        "go/packages/go-inference.md",
+        "go/packages/go-rag.md",
+        "go/packages/go-ratelimit.md",
+        "go/packages/go-session.md",
+      ]},
+      {"DevOps & Build" = [
+        "go/packages/go-devops.md",
+        "go/packages/go-build.md",
+        "go/packages/go-scm.md",
+        "go/packages/go-ansible.md",
+        "go/packages/go-infra.md",
+        "go/packages/go-container.md",
+        "go/packages/go-forge.md",
+        "go/packages/go-process.md",
+      ]},
+      {"Language & Rendering" = [
+        "go/packages/go-i18n.md",
+        "go/packages/go-html.md",
+      ]},
+      {"Crypto & Chain" = [
+        "go/packages/go-crypt.md",
+        "go/packages/go-blockchain.md",
+        "go/packages/go-p2p.md",
+      ]},
+      {"Networking" = [
+        "go/packages/go-api.md",
+        "go/packages/go-ws.md",
+        "go/packages/go-webview.md",
+      ]},
+      {"Core Infra" = [
+        "go/packages/go-io.md",
+        "go/packages/go-log.md",
+        "go/packages/go-config.md",
+        "go/packages/go-cache.md",
+        "go/packages/go-store.md",
+        "go/packages/go-git.md",
+      ]},
+    ]},
+    {"Claude Code Skill" = [
+      "go/skill/index.md",
+    ]},
+  ]},
+
+  {"PHP" = [
+    "php/index.md",
+    {"Guides" = [
+      "php/guides/index.md",
+      {"Getting Started" = [
+        "php/getting-started/index.md",
+        "php/getting-started/installation.md",
+        "php/getting-started/quick-start.md",
+        "php/getting-started/configuration.md",
+        "php/getting-started/namespaces.md",
+      ]},
+      {"Framework" = [
+        "php/framework/index.md",
+        "php/framework/modules.md",
+        "php/framework/events.md",
+        "php/framework/service-contracts.md",
+        "php/framework/testing.md",
+        "php/framework/security.md",
+      ]},
+      {"Features" = [
+        "php/features/index.md",
+        "php/features/actions.md",
+        "php/features/tenancy.md",
+        "php/features/search.md",
+        "php/features/seo.md",
+        "php/features/cdn.md",
+        "php/features/media.md",
+        "php/features/activity.md",
+        "php/features/seeder-system.md",
+      ]},
+    ]},
+    {"Reference" = [
+      "php/reference/index.md",
+      {"Architecture" = [
+        "php/architecture/index.md",
+        "php/architecture/module-system.md",
+        "php/architecture/lifecycle-events.md",
+        "php/architecture/lazy-loading.md",
+        "php/architecture/multi-tenancy.md",
+        "php/architecture/custom-events.md",
+        "php/architecture/performance.md",
+      ]},
+      {"Patterns" = [
+        "php/patterns/index.md",
+        "php/patterns/actions.md",
+        "php/patterns/activity-logging.md",
+        "php/patterns/hlcrf.md",
+        "php/patterns/repositories.md",
+        "php/patterns/seeders.md",
+        "php/patterns/services.md",
+      ]},
+    ]},
+    {"Packages" = [
+      "php/packages/index.md",
+      {"Admin" = [
+        "php/packages/admin/index.md",
+        "php/packages/admin/creating-admin-panels.md",
+        "php/packages/admin/components.md",
+        "php/packages/admin/components-reference.md",
+        "php/packages/admin/forms.md",
+        "php/packages/admin/menus.md",
+        "php/packages/admin/modals.md",
+        "php/packages/admin/search.md",
+        "php/packages/admin/authorization.md",
+        "php/packages/admin/hlcrf-deep-dive.md",
+      ]},
+      {"API" = [
+        "php/packages/api/index.md",
+        "php/packages/api/building-rest-apis.md",
+        "php/packages/api/authentication.md",
+        "php/packages/api/endpoints-reference.md",
+        "php/packages/api/rate-limiting.md",
+        "php/packages/api/scopes.md",
+        "php/packages/api/webhooks.md",
+        "php/packages/api/webhook-integration.md",
+        "php/packages/api/documentation.md",
+      ]},
+      {"Commerce" = [
+        "php/packages/commerce/index.md",
+        "php/packages/commerce/architecture.md",
+        "php/packages/commerce/webhooks.md",
+        "php/packages/commerce/security.md",
+      ]},
+      {"Content" = [
+        "php/packages/content/index.md",
+        "php/packages/content/architecture.md",
+        "php/packages/content/security.md",
+      ]},
+      {"MCP" = [
+        "php/packages/mcp/index.md",
+        "php/packages/mcp/creating-mcp-tools.md",
+        "php/packages/mcp/tools.md",
+        "php/packages/mcp/tools-reference.md",
+        "php/packages/mcp/workspace.md",
+        "php/packages/mcp/query-database.md",
+        "php/packages/mcp/sql-security.md",
+        "php/packages/mcp/analytics.md",
+        "php/packages/mcp/quotas.md",
+        "php/packages/mcp/security.md",
+      ]},
+      {"Tenant" = [
+        "php/packages/tenant/index.md",
+        "php/packages/tenant/architecture.md",
+        "php/packages/tenant/teams-permissions.md",
+        "php/packages/tenant/entitlements.md",
+        "php/packages/tenant/security.md",
+      ]},
+      {"Developer" = [
+        "php/packages/developer/index.md",
+        "php/packages/developer/architecture.md",
+        "php/packages/developer/security.md",
+      ]},
+    ]},
+  ]},
+
+  {"TS" = [
+    "typescript/index.md",
+  ]},
+
+  {"GUI" = [
+    "gui/index.md",
+  ]},
+
+  {"AI" = [
+    "ai/index.md",
+  ]},
+
+  {"Tools" = [
+    {"Agent" = [
+      "agent/index.md",
+    ]},
+    {"MCP" = [
+      "mcp/index.md",
+    ]},
+    {"IDE" = [
+      "ide/index.md",
+    ]},
+    {"CLI" = [
+      "cli/index.md",
+      {"Development" = [
+        {"core go" = [
+          "cli/go/index.md",
+          "cli/go/test/index.md",
+          "cli/go/fmt/index.md",
+          "cli/go/lint/index.md",
+          "cli/go/cov/index.md",
+          "cli/go/install/index.md",
+          {"core go mod" = [
+            "cli/go/mod/index.md",
+            "cli/go/mod/tidy/index.md",
+            "cli/go/mod/download/index.md",
+            "cli/go/mod/graph/index.md",
+            "cli/go/mod/verify/index.md",
+          ]},
+          {"core go work" = [
+            "cli/go/work/index.md",
+            "cli/go/work/init/index.md",
+            "cli/go/work/sync/index.md",
+            "cli/go/work/use/index.md",
+          ]},
+        ]},
+        {"core php" = [
+          "cli/php/index.md",
+        ]},
+        {"core test" = [
+          "cli/test/index.md",
+        ]},
+      ]},
+      {"Build & Release" = [
+        {"core build" = [
+          "cli/build/index.md",
+          {"core build sdk" = [
+            "cli/build/sdk/index.md",
+          ]},
+        ]},
+        {"core ci" = [
+          "cli/ci/index.md",
+          "cli/ci/changelog/index.md",
+          "cli/ci/init/index.md",
+          "cli/ci/version/index.md",
+        ]},
+      ]},
+      {"Multi-Repo" = [
+        {"core dev" = [
+          "cli/dev/index.md",
+          "cli/dev/work/index.md",
+          "cli/dev/commit/index.md",
+          "cli/dev/push/index.md",
+          "cli/dev/pull/index.md",
+          "cli/dev/health/index.md",
+          "cli/dev/issues/index.md",
+          "cli/dev/reviews/index.md",
+          "cli/dev/impact/index.md",
+          "cli/dev/ci/index.md",
+        ]},
+      ]},
+      {"Utilities" = [
+        {"core doctor" = [
+          "cli/doctor/index.md",
+        ]},
+        {"core setup" = [
+          "cli/setup/index.md",
+        ]},
+        {"core ai" = [
+          "cli/ai/index.md",
+        ]},
+        {"core docs" = [
+          "cli/docs/index.md",
+        ]},
+        {"core sdk" = [
+          "cli/sdk/index.md",
+        ]},
+        {"core pkg" = [
+          "cli/pkg/index.md",
+          "cli/pkg/search/index.md",
+        ]},
+        {"core vm" = [
+          "cli/vm/index.md",
+          "cli/vm/templates/index.md",
+        ]},
+      ]},
+    ]},
+    {"API" = [
+      "api/authentication.md",
+      "api/endpoints.md",
+      "api/errors.md",
+    ]},
+  ]},
+
+  {"Deploy" = [
+    "deploy/index.md",
+    {"Targets" = [
+      "deploy/docker.md",
+      "deploy/php.md",
+      "deploy/linuxkit.md",
+    ]},
+    {"Reference" = [
+      "deploy/templates.md",
+    ]},
+  ]},
+
+  {"Publish" = [
+    "publish/index.md",
+    {"Package Managers" = [
+      "publish/homebrew.md",
+      "publish/scoop.md",
+      "publish/aur.md",
+      "publish/chocolatey.md",
+      "publish/npm.md",
+    ]},
+    {"Containers & VMs" = [
+      "publish/docker.md",
+      "publish/linuxkit.md",
+    ]},
+    {"Source" = [
+      "publish/github.md",
+    ]},
+  ]},
+]
+
+[project.theme]
+features = [
+  "navigation.tabs",
+  "navigation.sections",
+  "navigation.indexes",
+  "navigation.prune",
+  "navigation.path",
+  "navigation.tracking",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.instant.progress",
+  "navigation.top",
+  "toc.follow",
+  "search.suggest",
+  "search.highlight",
+  "content.code.copy",
+  "content.code.annotate",
+]
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "indigo"
+accent = "blue"
+toggle_icon = "material/brightness-7"
+toggle_name = "Switch to light mode"
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "indigo"
+accent = "blue"
+toggle_icon = "material/brightness-4"
+toggle_name = "Switch to dark mode"
+
+[project.theme.font]
+text = "Inter"
+code = "JetBrains Mono"
+
+[project.plugins]
+search = {}
+
+[project.markdown_extensions]
+admonition = {}
+footnotes = {}
+attr_list = {}
+md_in_html = {}
+
+[project.markdown_extensions.toc]
+permalink = true
+
+[project.markdown_extensions."pymdownx.details"]
+
+[project.markdown_extensions."pymdownx.superfences"]
+custom_fences = [
+  {name = "mermaid", class = "mermaid", format_name = "fence_code_format"},
+]
+
+[project.markdown_extensions."pymdownx.highlight"]
+anchor_linenums = true
+
+[project.markdown_extensions."pymdownx.inlinehilite"]
+
+[project.markdown_extensions."pymdownx.tabbed"]
+alternate_style = true
+
+[project.markdown_extensions."pymdownx.snippets"]
