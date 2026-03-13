@@ -87,21 +87,16 @@ The package auto-registers via Laravel's service provider discovery (`Core\Mod\A
 | `cmd/mcp/` | stdio (mcp-go) | `marketplace_list`, `marketplace_plugin_info`, `core_cli`, `ethics_check` |
 | `google/mcp/` | HTTP (:8080) | `core_go_test`, `core_dev_health`, `core_dev_commit` |
 
-### Claude Code Plugins
+### AI Platform Plugins
 
-| Plugin | Path | Commands |
-|--------|------|----------|
-| **code** | `claude/code/` | `/code:remember`, `/code:yes`, `/code:qa` |
-| **review** | `claude/review/` | `/review:review`, `/review:security`, `/review:pr` |
-| **verify** | `claude/verify/` | `/verify:verify`, `/verify:ready`, `/verify:tests` |
-| **qa** | `claude/qa/` | `/qa:qa`, `/qa:fix` |
-| **ci** | `claude/ci/` | `/ci:ci`, `/ci:workflow`, `/ci:fix`, `/ci:run`, `/ci:status` |
+Core Agent provides plugins for multiple AI coding assistants. Each platform has its own plugin format and distribution method.
 
-Install all plugins: `claude plugin add host-uk/core-agent`
-
-### Codex Plugins
-
-The `codex/` directory mirrors the Claude plugin structure for OpenAI Codex, plus additional plugins for ethics, guardrails, performance, and issue management.
+| Platform | Directory | Distribution | Details |
+|----------|-----------|-------------|---------|
+| **Claude Code** | `claude/` | npm marketplace (`@lthn/core-agent`) | [Claude Code Plugins](claude.md) |
+| **OpenAI Codex** | `codex/` | `AGENTS.md` auto-discovery | [Codex Plugins](codex.md) |
+| **Google Gemini** | `google/gemini-cli/` | TypeScript extension | [Gemini Extension](gemini.md) |
+| **LEM** | *(integrated)* | Local inference | [LEM Integration](lem.md) |
 
 ### PHP Package
 

@@ -204,6 +204,10 @@ nav = [
     "tools/index.md",
     {"Agent" = [
       "tools/agent/index.md",
+      "tools/agent/claude.md",
+      "tools/agent/codex.md",
+      "tools/agent/gemini.md",
+      "tools/agent/lem.md",
     ]},
     {"MCP" = [
       "tools/mcp/index.md",
