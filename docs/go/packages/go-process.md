@@ -98,14 +98,105 @@ procs := process.List()
 running := process.Running()
 ```
 
-## Package Layout
+## Daemon mode
+
+go-process also manages *this process* as a long-running service. Where
+`Process` manages child processes, `Daemon` manages the current process's own
+lifecycle -- PID file locking, health endpoints, signal handling, and graceful
+shutdown.
+
+These types were extracted from `core/cli` to give any Go service daemon
+capabilities without depending on the full CLI framework.
+
+### PID file
+
+`PIDFile` enforces single-instance execution. It writes the current PID on
+`Acquire()`, detects stale lock files, and cleans up on `Release()`.
+
+```go
+pf := process.NewPIDFile("/var/run/myapp.pid")
+if err := pf.Acquire(); err != nil {
+    log.Fatal("another instance is running")
+}
+defer pf.Release()
+```
+
+### Health server
+
+`HealthServer` provides HTTP `/health` and `/ready` endpoints. Custom health
+checks can be added and the ready state toggled independently.
+
+```go
+hs := process.NewHealthServer("127.0.0.1:9000")
+hs.AddCheck(func() error { return db.Ping() })
+hs.Start()
+defer hs.Stop(ctx)
+hs.SetReady(true)
+```
+
+### Daemon orchestration
+
+`Daemon` combines PID file, health server, and signal handling into a single
+struct. It listens for `SIGTERM`/`SIGINT` and calls registered shutdown hooks.
+
+```go
+d := process.NewDaemon(process.DaemonOptions{
+    PIDFile:         "/var/run/myapp.pid",
+    HealthAddr:      "127.0.0.1:9000",
+    ShutdownTimeout: 30 * time.Second,
+})
+d.Start()
+d.SetReady(true)
+d.Run(ctx) // blocks until signal
+```
+
+### Daemon registry
+
+The `Registry` tracks all running daemons across the system via JSON files
+in `~/.core/daemons/`. When a `Daemon` is configured with a `Registry`, it
+auto-registers on start and auto-unregisters on stop.
+
+```go
+reg := process.DefaultRegistry()
+
+// Manual registration
+reg.Register(process.DaemonEntry{
+    Code: "my-app", Daemon: "serve", PID: os.Getpid(),
+    Health: "127.0.0.1:9000", Project: "/path/to/project",
+})
+
+// List all live daemons (stale entries are pruned automatically)
+entries, _ := reg.List()
+
+// Auto-registration via Daemon
+d := process.NewDaemon(process.DaemonOptions{
+    Registry: reg,
+    RegistryEntry: process.DaemonEntry{
+        Code: "my-app", Daemon: "serve",
+    },
+})
+```
+
+The registry is consumed by `core start/stop/list` CLI commands for
+project-level daemon management.
+
+## Package layout
 
 | Path | Description |
 |------|-------------|
-| `*.go` (root) | Core process service, types, actions, runner, daemon, health, PID file, registry |
+| `*.go` (root) | Process service, types, actions, runner, daemon, health, PID file, registry |
 | `exec/` | Lightweight command wrapper with fluent API and structured logging |
 
-## Module Information
+Key files:
+
+| File | Purpose |
+|------|---------|
+| `daemon.go` | `Daemon`, `DaemonOptions`, `Mode`, `DetectMode()` |
+| `pidfile.go` | `PIDFile` (acquire, release, stale detection) |
+| `health.go` | `HealthServer` with `/health` and `/ready` endpoints |
+| `registry.go` | `Registry`, `DaemonEntry`, `DefaultRegistry()` |
+
+## Module information
 
 | Field | Value |
 |-------|-------|

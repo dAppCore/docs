@@ -27,22 +27,66 @@ go-blockchain       -- Go reimplementation of the Zano-fork protocol
 
 The Lethean mainnet launched on **2026-02-12** with genesis timestamp `1770897600` (12:00 UTC). The chain runs a hybrid PoW/PoS consensus with 120-second block targets.
 
-## Package Structure
+## Binary
+
+The repo produces a standalone `core-chain` binary via `cmd/core-chain/main.go`.
+It uses `cli.Main()` and `cli.WithCommands()` from the Core CLI framework,
+keeping the potentially heavy CGo dependencies out of the main `core` binary.
+
+```bash
+# Build
+core build                          # uses .core/build.yaml
+go build -o ./bin/core-chain ./cmd/core-chain
+
+# TUI block explorer
+core-chain chain explorer
+
+# Headless P2P sync
+core-chain chain sync
+
+# Sync as a background daemon
+core-chain chain sync --daemon
+
+# Stop a running sync daemon
+core-chain chain sync --stop
+```
+
+Persistent flags on the `chain` parent command:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--data-dir` | `~/.lethean/chain` | Blockchain data directory |
+| `--seed` | `seeds.lthn.io:36942` | Seed peer address |
+| `--testnet` | `false` | Use testnet parameters |
+
+The sync subcommand supports daemon mode via go-process, with PID file
+locking at `{data-dir}/sync.pid` and automatic registration in the daemon
+registry (`~/.core/daemons/`).
+
+## Package structure
 
 ```
 go-blockchain/
-  config/       Chain parameters (mainnet/testnet), hardfork schedule
-  types/        Core data types: Hash, PublicKey, Address, Block, Transaction
-  wire/         Binary serialisation (consensus-critical, bit-identical to C++)
-  crypto/       CGo bridge to libcryptonote (ring sigs, BP+, Zarcanum, stealth)
-  difficulty/   PoW + PoS difficulty adjustment (LWMA variant)
-  consensus/    Three-layer block/transaction validation
-  chain/        Blockchain storage, block/tx validation, mempool
-  p2p/          Levin TCP protocol, peer discovery, handshake
-  rpc/          Daemon and wallet JSON-RPC client
-  wallet/       Key management, output scanning, tx construction
-  mining/       Solo PoW miner (RandomX nonce grinding)
-  tui/          Terminal dashboard (bubbletea + lipgloss)
+  cmd/
+    core-chain/   Standalone binary entry point (cli.Main)
+  commands.go     AddChainCommands() registration + shared helpers
+  cmd_explorer.go TUI block explorer subcommand
+  cmd_sync.go     Headless sync subcommand with daemon support
+  sync_service.go Extracted P2P sync loop
+  config/         Chain parameters (mainnet/testnet), hardfork schedule
+  types/          Core data types: Hash, PublicKey, Address, Block, Transaction
+  wire/           Binary serialisation (consensus-critical, bit-identical to C++)
+  crypto/         CGo bridge to libcryptonote (ring sigs, BP+, Zarcanum, stealth)
+  difficulty/     PoW + PoS difficulty adjustment (LWMA variant)
+  consensus/      Three-layer block/transaction validation
+  chain/          Blockchain storage, block/tx validation, mempool
+  p2p/            Levin TCP protocol, peer discovery, handshake
+  rpc/            Daemon and wallet JSON-RPC client
+  wallet/         Key management, output scanning, tx construction
+  mining/         Solo PoW miner (RandomX nonce grinding)
+  tui/            Terminal dashboard (bubbletea + lipgloss)
+  .core/
+    build.yaml    Build system config (targets: darwin/arm64, linux/amd64)
 ```
 
 ## Design Principles
@@ -123,7 +167,20 @@ The project follows a 9-phase development plan. See the [wiki Development Phases
 | 7 | Consensus Rules | Complete |
 | 8 | Mining | Complete |
 
-## Further Reading
+## Dependencies
+
+| Module | Purpose |
+|--------|---------|
+| `forge.lthn.ai/core/cli` | CLI framework (`cli.Main`, cobra, bubbletea TUI) |
+| `forge.lthn.ai/core/go` | DI container and service lifecycle |
+| `forge.lthn.ai/core/go-process` | Daemon lifecycle, PID file, registry (sync daemon mode) |
+| `forge.lthn.ai/core/go-store` | SQLite storage backend for chain data |
+| `forge.lthn.ai/core/go-p2p` | Levin protocol implementation |
+| `forge.lthn.ai/core/go-crypt` | Cryptographic utilities |
+| `golang.org/x/crypto` | SSH, additional crypto primitives |
+| `github.com/stretchr/testify` | Test assertions (test-only) |
+
+## Further reading
 
 - [Architecture](architecture.md) -- Package dependencies, CGo boundary, data structures
 - [Cryptography](cryptography.md) -- Crypto primitives, hashing, signatures, proofs

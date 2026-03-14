@@ -95,6 +95,7 @@ nav = [
       {"Features" = [
         "php/features/index.md",
         "php/features/actions.md",
+        "php/features/scheduled-actions.md",
         "php/features/tenancy.md",
         "php/features/search.md",
         "php/features/seo.md",
@@ -102,6 +103,7 @@ nav = [
         "php/features/media.md",
         "php/features/activity.md",
         "php/features/seeder-system.md",
+        "php/features/studio.md",
       ]},
     ]},
     {"Reference" = [
@@ -185,6 +187,8 @@ nav = [
         "php/packages/developer/architecture.md",
         "php/packages/developer/security.md",
       ]},
+      "php/packages/plug.md",
+      "php/packages/uptelligence.md",
     ]},
   ]},
 

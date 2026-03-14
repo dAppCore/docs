@@ -63,6 +63,18 @@ const packages = [
     slug: 'developer',
     description: 'Admin developer tools for debugging, monitoring, and server management',
     icon: '🛠️'
+  },
+  {
+    name: 'Plug',
+    slug: 'plug',
+    description: 'Unified integrations for social media, messaging, CDN, storage, and stock media services',
+    icon: '🔗'
+  },
+  {
+    name: 'Uptelligence',
+    slug: 'uptelligence',
+    description: 'Vendor dependency monitoring, upstream release tracking, and update management',
+    icon: '📡'
   }
 ]
 

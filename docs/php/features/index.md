@@ -1,6 +1,6 @@
 ---
 title: Features
-description: Built-in features — actions, tenancy, search, SEO, CDN, media, activity logging, and seeders
+description: Built-in features — actions, scheduled actions, tenancy, search, SEO, CDN, media, activity logging, studio, and seeders
 ---
 
 # Features

@@ -1,12 +1,12 @@
 ---
 title: Core MCP
-description: Model Context Protocol server and tooling for AI agents -- Go binary + Laravel PHP package.
+description: Model Context Protocol server and tooling for AI agents -- polyglot Go + PHP package.
 ---
 
 # Core MCP
 
 `forge.lthn.ai/core/mcp` provides a complete Model Context Protocol (MCP)
-implementation spanning two languages:
+implementation spanning two languages in a single polyglot repository:
 
 - **Go** -- a standalone MCP server binary (`core-mcp`) with file operations,
   ML inference, RAG, process management, webview automation, and WebSocket
@@ -17,6 +17,18 @@ implementation spanning two languages:
 
 Both halves speak the same protocol and can bridge to one another via REST or
 WebSocket.
+
+## Polyglot repository structure
+
+The repo follows the same pattern as `core/agent` -- Go code lives at the root
+(`go.mod`, `pkg/`, `cmd/`), PHP code lives under `src/php/`, and the root
+`composer.json` publishes the PHP package as `lthn/mcp`. A `.gitattributes`
+file excludes Go sources from Composer distributions.
+
+The Go MCP server was originally part of `go-ai` and was extracted into its own
+module to decouple MCP transport and tooling from the broader AI library. The
+PHP package was previously published as `core/php-mcp` (now archived on Forge)
+and is replaced by this unified repo.
 
 ## Quick start
 
