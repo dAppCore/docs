@@ -1,15 +1,60 @@
 # Configuration
 
-Core uses `.core/` directory for project configuration.
+Core uses `.core/` directory for project configuration. Config files are auto-discovered — commands need zero arguments.
+
+## Quick Reference
+
+| File | Scope | Package | Purpose |
+|------|-------|---------|---------|
+| `~/.core/config.yaml` | User | go-config | Global settings (Viper) |
+| `.core/build.yaml` | Project | go-build | Build targets, flags, signing |
+| `.core/release.yaml` | Project | go-build | Publishers, changelog, SDK gen |
+| `.core/php.yaml` | Project | go-build | PHP/Laravel dev, test, deploy |
+| `.core/test.yaml` | Project | go-container | Named test commands |
+| `.core/manifest.yaml` | App | go-scm | Providers, daemons, permissions |
+| `.core/workspace.yaml` | Workspace | agent | Active package, paths |
+| `.core/repos.yaml` | Workspace | go-scm | Repo registry + dependencies |
+| `.core/work.yaml` | Workspace | go-scm | Sync policy, agent heartbeat |
+| `.core/git.yaml` | Machine | go-scm | Local git state (gitignored) |
+| `.core/kb.yaml` | Workspace | go-scm | Wiki mirror, Qdrant search |
+| `.core/linuxkit/*.yml` | Project | go-container | VM templates |
+
+**Scopes:**
+
+- **User** (`~/.core/`) — global settings, persists across all projects
+- **Project** (`{repo}/.core/`) — per-repository config, checked into git
+- **Workspace** (`{workspace}/.core/`) — multi-repo workspace config, checked into git
+- **Machine** (`{workspace}/.core/`) — per-machine state, gitignored
+
+**Discovery patterns:**
+
+- **Fixed path** — `build.yaml`, `release.yaml`, `test.yaml`, `manifest.yaml`
+- **Walk-up** — `workspace.yaml`, `repos.yaml` (search current dir → parents → home)
+- **Direct load** — `work.yaml`, `git.yaml`, `kb.yaml` (from workspace root)
 
 ## Directory Structure
 
 ```
-.core/
-├── release.yaml      # Release configuration
-├── build.yaml        # Build configuration (optional)
-├── php.yaml          # PHP configuration (optional)
-└── linuxkit/         # LinuxKit templates
+~/.core/                      # User-level (global)
+├── config.yaml               # Global settings
+├── plugins/                  # Plugin discovery
+├── known_hosts               # SSH known hosts
+└── linuxkit/                 # User LinuxKit templates
+
+{workspace}/.core/            # Workspace-level (shared)
+├── workspace.yaml            # Active package, paths
+├── repos.yaml                # Repository registry
+├── work.yaml                 # Sync policy, agent heartbeat
+├── git.yaml                  # Machine-local git state (gitignored)
+└── kb.yaml                   # Knowledge base config
+
+{project}/.core/              # Project-level (per-repo)
+├── build.yaml                # Build configuration
+├── release.yaml              # Release configuration
+├── php.yaml                  # PHP/Laravel configuration
+├── test.yaml                 # Test commands
+├── manifest.yaml             # Application manifest
+└── linuxkit/                 # LinuxKit templates
     ├── server.yml
     └── dev.yml
 ```
@@ -297,6 +342,168 @@ repos:
 | `module` | Reusable modules | Foundation packages |
 | `product` | User-facing applications | Foundation + modules |
 | `template` | Starter templates | Any |
+
+## workspace.yaml
+
+Workspace-level configuration. Discovered by walking up from CWD.
+
+```yaml
+version: 1
+
+# Active package for unified commands
+active: core-php
+
+# Default package types for setup
+default_only:
+  - foundation
+  - module
+
+# Paths
+packages_dir: ./packages
+
+# Workspace settings
+settings:
+  suggest_core_commands: true
+  show_active_in_prompt: true
+```
+
+**Package:** `forge.lthn.ai/core/agent` · **Discovery:** walk-up from CWD
+
+## work.yaml
+
+Team sync policy. Checked into git (shared across team).
+
+```yaml
+version: 1
+
+sync:
+  interval: 5m
+  auto_pull: true
+  auto_push: false
+  clone_missing: true
+
+agent:
+  heartbeat_interval: 30s
+  stale_after: 10m
+  overlap_warning: true
+
+triggers:
+  on_activate: sync
+  on_commit: push
+  scheduled: "*/5 * * * *"
+```
+
+**Package:** `forge.lthn.ai/core/go-scm/repos` · **Discovery:** `{workspaceRoot}/.core/work.yaml`
+
+## git.yaml
+
+Machine-local git state. **Gitignored** — not shared across machines.
+
+```yaml
+version: 1
+
+repos:
+  core-php:
+    branch: main
+    remote: origin
+    last_pull: "2026-03-15T10:00:00Z"
+    last_push: "2026-03-15T09:45:00Z"
+    ahead: 0
+    behind: 0
+  core-tenant:
+    branch: main
+    remote: origin
+    last_pull: "2026-03-15T10:00:00Z"
+
+agent:
+  name: cladius
+  last_heartbeat: "2026-03-15T10:05:00Z"
+```
+
+**Package:** `forge.lthn.ai/core/go-scm/repos` · **Discovery:** `{workspaceRoot}/.core/git.yaml`
+
+## kb.yaml
+
+Knowledge base configuration. Controls wiki mirroring and vector search.
+
+```yaml
+version: 1
+
+wiki:
+  enabled: true
+  directory: kb          # Relative to .core/
+  remote: "ssh://git@forge.lthn.ai:2223/core/wiki.git"
+
+search:
+  qdrant:
+    host: qdrant.lthn.sh
+    port: 6334
+    collection: openbrain
+  ollama:
+    url: http://ollama.lthn.sh
+    model: embeddinggemma
+  top_k: 10
+```
+
+**Package:** `forge.lthn.ai/core/go-scm/repos` · **Discovery:** `{workspaceRoot}/.core/kb.yaml`
+
+## test.yaml
+
+Named test commands per project. Auto-detected if not present.
+
+```yaml
+version: 1
+
+commands:
+  unit:
+    run: composer test -- --filter=Unit
+    env:
+      APP_ENV: testing
+  integration:
+    run: composer test -- --filter=Integration
+    env:
+      APP_ENV: testing
+      DB_DATABASE: test_db
+  all:
+    run: composer test
+```
+
+**Auto-detection chain** (if no `test.yaml`): `composer.json` → `package.json` → `go.mod` → `pytest` → `Taskfile`
+
+**Package:** `forge.lthn.ai/core/go-container/devenv` · **Discovery:** `{projectDir}/.core/test.yaml`
+
+## manifest.yaml
+
+Application manifest for providers, daemons, and permissions. Supports ed25519 signature verification.
+
+```yaml
+version: 1
+
+app:
+  name: my-provider
+  namespace: my-provider
+  description: Custom service provider
+
+providers:
+  - namespace: my-provider
+    port: 9900
+    binary: ./bin/my-provider
+    args: ["serve"]
+    elements:
+      - tag: my-provider-panel
+        source: /assets/my-provider.js
+
+daemons:
+  - name: worker
+    command: ./bin/worker
+    restart: always
+
+permissions:
+  - net.listen
+  - fs.read
+```
+
+**Package:** `forge.lthn.ai/core/go-scm/manifest` · **Discovery:** `{appRoot}/.core/manifest.yaml`
 
 ---
 
