@@ -1,3 +1,5 @@
 site/
 .cache/
 .DS_Store
+.core/
+.idea/
