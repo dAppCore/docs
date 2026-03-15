@@ -1,7 +1,6 @@
 package help
 
 import (
-	"fmt"
 	"io/fs"
 	"iter"
 	"maps"
@@ -9,6 +8,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	log "forge.lthn.ai/core/go-log"
 )
 
 // Catalog manages help topics.
@@ -114,19 +115,19 @@ func LoadContentDir(dir string) (*Catalog, error) {
 
 		content, err := os.ReadFile(path)
 		if err != nil {
-			return fmt.Errorf("reading %s: %w", path, err)
+			return log.E("catalog.LoadContentDir", "reading "+path, err)
 		}
 
 		topic, err := ParseTopic(path, content)
 		if err != nil {
-			return fmt.Errorf("parsing %s: %w", path, err)
+			return log.E("catalog.LoadContentDir", "parsing "+path, err)
 		}
 
 		c.Add(topic)
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("walking directory %s: %w", dir, err)
+		return nil, log.E("catalog.LoadContentDir", "walking directory "+dir, err)
 	}
 
 	return c, nil
@@ -136,7 +137,7 @@ func LoadContentDir(dir string) (*Catalog, error) {
 func (c *Catalog) Get(id string) (*Topic, error) {
 	t, ok := c.topics[id]
 	if !ok {
-		return nil, fmt.Errorf("topic not found: %s", id)
+		return nil, log.E("catalog.Get", "topic not found: "+id, nil)
 	}
 	return t, nil
 }
