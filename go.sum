@@ -1,7 +1,9 @@
-forge.lthn.ai/core/go-html v0.1.4 h1:tNdN5rAs+oMkGZ0c03imKC0k0YNBiEgSd0vRa4e+KtA=
-forge.lthn.ai/core/go-html v0.1.4/go.mod h1:0ledx5SyHxQ7uAjHynLZ8TutH1ZVVQr7Kn59pgPFwfo=
-forge.lthn.ai/core/go-i18n v0.1.4 h1:zOHUUJDgRo88/3tj++kN+VELg/buyZ4T2OSdG3HBbLQ=
-forge.lthn.ai/core/go-i18n v0.1.4/go.mod h1:aDyAfz7MMgWYgLkZCptfFmZ7jJg3ocwjEJ1WkJSvv4U=
+forge.lthn.ai/core/go v0.3.1 h1:5FMTsUhLcxSr07F9q3uG0Goy4zq4eLivoqi8shSY4UM=
+forge.lthn.ai/core/go v0.3.1/go.mod h1:gE6c8h+PJ2287qNhVUJ5SOe1kopEwHEquvinstpuyJc=
+forge.lthn.ai/core/go-html v0.1.5 h1:xB8f0bTTAHi31BX4kEWY/gcxd6AuFdXangJZXFF9fRI=
+forge.lthn.ai/core/go-html v0.1.5/go.mod h1:2fJ1EhPB+IVxpIhYDEJ4Uei6nIZ4TTwDVyeK5zniT40=
+forge.lthn.ai/core/go-i18n v0.1.5 h1:B4hV4eTl63akZiplM8lswuttctrcSOCWyFSGBZmu6Nc=
+forge.lthn.ai/core/go-i18n v0.1.5/go.mod h1:hJsUxmqdPly73i3VkTDxvmbrpjxSd65hQVQqWA3+fnM=
 forge.lthn.ai/core/go-inference v0.1.4 h1:fuAgWbqsEDajHniqAKyvHYbRcBrkGEiGSqR2pfTMRY0=
 forge.lthn.ai/core/go-inference v0.1.4/go.mod h1:jfWz+IJX55wAH98+ic6FEqqGB6/P31CHlg7VY7pxREw=
 forge.lthn.ai/core/go-log v0.0.4 h1:KTuCEPgFmuM8KJfnyQ8vPOU1Jg654W74h8IJvfQMfv0=
