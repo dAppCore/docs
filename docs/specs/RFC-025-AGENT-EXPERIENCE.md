@@ -370,7 +370,7 @@ func ExampleAction_Run() {
     r := c.Action("double").Run(context.Background(), NewOptions(
         Option{Key: "n", Value: 21},
     ))
-    fmt.Println(r.Value)
+    Println(r.Value)
     // Output: 42
 }
 ```
@@ -399,15 +399,16 @@ Core primitives become mechanical code review rules. An agent reviewing a diff c
 
 | Import | Violation | Use Instead |
 |--------|-----------|-------------|
+| `os` | Bypasses Fs/Env primitives | `c.Fs()`, `core.Env()`, `core.DirFS()`, `Fs.TempDir()` |
 | `os/exec` | Bypasses Process primitive | `c.Process().Run()` |
-| `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
-| `encoding/json` | Bypasses Core serialisation | `core.JSONMarshal()` / `core.JSONUnmarshal()` |
-| `os` | Bypasses Fs/Env primitives | `c.Fs()`, `core.Env()`, `core.DirFS()` |
 | `io` | Bypasses stream primitives | `core.ReadAll()`, `core.WriteAll()`, `core.CloseStream()` |
-| `path/filepath` | Bypasses path security boundary | `core.Path()` / `core.JoinPath()` |
-| `fmt.Errorf` | Bypasses error primitive | `core.E()` |
-| `errors` | Bypasses error primitive | `core.NewError()` / `core.Is()` / `core.As()` |
-| `log.*` | Bypasses logging | `core.Info()` / `c.Log()` |
+| `fmt` | Bypasses string/print primitives | `core.Println()`, `core.Sprintf()`, `core.Sprint()` |
+| `errors` | Bypasses error primitive | `core.NewError()`, `core.E()`, `core.Is()`, `core.As()` |
+| `log` | Bypasses logging | `core.Info()`, `core.Warn()`, `core.Error()`, `c.Log()` |
+| `encoding/json` | Bypasses Core serialisation | `core.JSONMarshal()`, `core.JSONUnmarshal()` |
+| `path/filepath` | Bypasses path security boundary | `core.Path()`, `core.JoinPath()`, `core.PathBase()` |
+| `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
+| `strings` | Bypasses string guardrails | `core.Contains()`, `core.Split()`, `core.Trim()`, etc. |
 
 **Rule:** If a diff introduces a disallowed import, it failed code review. The import list IS the quality gate. No subjective judgement needed — a weaker model can enforce this mechanically.
 
@@ -544,11 +545,11 @@ AX applies to all code in the Core ecosystem. core/go is fully migrated (v0.8.0)
 Priority for migrating a package:
 1. **Lifecycle** — `OnStartup`/`OnShutdown` return `Result`
 2. **Actions** — register capabilities as named Actions
-3. **Process** — `exec.Command` → `c.Process()`
-4. **Test naming** — `TestFile_Function_{Good,Bad,Ugly}`
-5. **Imports** — replace disallowed imports (Principle 9)
-6. **JSON** — `encoding/json` → `core.JSONMarshal()`/`core.JSONUnmarshal()`
-7. **Validation** — inline checks → `core.ValidateName()`/`core.SanitisePath()`
+3. **Imports** — replace all 10 disallowed imports (Principle 9)
+4. **String ops** — `+` concat → `Concat()`, `path +` → `Path()`
+5. **Test naming** — `TestFile_Function_{Good,Bad,Ugly}`
+6. **Examples** — one `{source}_example_test.go` per source file
+7. **Comments** — every exported function has usage example (Principle 2)
 
 ## Verification
 
@@ -556,14 +557,14 @@ An agent auditing AX compliance checks:
 
 ```bash
 # Disallowed imports (Principle 9)
-grep -rn '"os/exec"\|"unsafe"\|"encoding/json"\|"fmt"\|"errors"\|"log"' *.go \
-  | grep -v _test.go | grep -v "// allowed:"
+grep -rn '"os"\|"os/exec"\|"io"\|"fmt"\|"errors"\|"log"\|"encoding/json"\|"path/filepath"\|"unsafe"\|"strings"' *.go \
+  | grep -v _test.go
 
 # Test naming (Principle 7)
 grep "^func Test" *_test.go | grep -v "Test[A-Z][a-z]*_.*_\(Good\|Bad\|Ugly\)"
 
-# Magic methods (should only be HandleIPCEvents)
-grep "interface {" *.go | grep -v "Startable\|Stoppable\|Stream"
+# String concat (should use Concat/Path)
+grep -n '" + \| + "' *.go | grep -v _test.go | grep -v "//"
 
 # Untyped dispatch (should prefer named Actions)
 grep "RegisterTask\|PERFORM\|type Task any" *.go
