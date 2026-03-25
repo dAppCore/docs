@@ -403,6 +403,7 @@ Core primitives become mechanical code review rules. An agent reviewing a diff c
 | `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
 | `encoding/json` | Bypasses Core serialisation | `core.JSONMarshal()` / `core.JSONUnmarshal()` |
 | `os` | Bypasses Fs/Env primitives | `c.Fs()`, `core.Env()`, `core.DirFS()` |
+| `io` | Bypasses stream primitives | `core.ReadAll()`, `core.WriteAll()`, `core.CloseStream()` |
 | `path/filepath` | Bypasses path security boundary | `core.Path()` / `core.JoinPath()` |
 | `fmt.Errorf` | Bypasses error primitive | `core.E()` |
 | `errors` | Bypasses error primitive | `core.NewError()` / `core.Is()` / `core.As()` |
