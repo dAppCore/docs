@@ -2,7 +2,7 @@
 
 - **Status:** Draft
 - **Authors:** Snider, Cladius
-- **Date:** 2026-03-19
+- **Date:** 2026-03-25
 - **Applies to:** All Core ecosystem packages (CoreGO, CorePHP, CoreTS, core-agent)
 
 ## Abstract
@@ -152,16 +152,16 @@ Every component in the ecosystem registers with Core and communicates through Co
 ```go
 c := core.New(
     core.WithOption("name", "core-agent"),
-    core.WithService(process.NewService(process.Options{})),
+    core.WithService(process.Register),
     core.WithService(agentic.Register),
     core.WithService(monitor.Register),
     core.WithService(brain.Register),
     core.WithService(mcp.Register),
 )
-c.Run()
+c.Run()  // or: if err := c.RunE(); err != nil { ... }
 ```
 
-`core.New()` accepts functional options. `WithService` registers a service factory that receives `*Core` and returns `Result`. Services are auto-discovered: name from package path, lifecycle from `Startable`/`Stoppable` interfaces, IPC handlers from `HandleIPCEvents`.
+`core.New()` returns `*Core`. `WithService` registers a factory `func(*Core) Result`. Services auto-discover: name from package path, lifecycle from `Startable`/`Stoppable` (return `Result`), IPC from `HandleIPCEvents`.
 
 #### Service Registration Pattern
 
@@ -177,19 +177,25 @@ func Register(c *core.Core) core.Result {
 
 #### Core Subsystem Accessors
 
-| Accessor | Analogy | Purpose |
-|----------|---------|---------|
-| `c.Options()` | argv | Input configuration used to create this Core |
-| `c.App()` | — | Application metadata (name, version) |
-| `c.Data()` | /mnt | Embedded assets mounted by packages |
-| `c.Drive()` | /dev | Transport handles (API, MCP, SSH, VPN) |
-| `c.Config()` | /etc | Configuration, settings, feature flags |
-| `c.Fs()` | / | Local filesystem I/O (sandboxable) |
-| `c.Error()` | — | Panic recovery (`ErrorPanic`) |
-| `c.Log()` | — | Structured logging (`ErrorLog`) |
-| `c.Cli()` | — | CLI command framework |
-| `c.IPC()` | — | Message bus (ACTION, QUERY, PERFORM) |
-| `c.I18n()` | — | Internationalisation |
+| Accessor | Purpose |
+|----------|---------|
+| `c.Options()` | Input configuration |
+| `c.App()` | Application metadata (name, version) |
+| `c.Config()` | Runtime settings, feature flags |
+| `c.Data()` | Embedded assets (Registry[*Embed]) |
+| `c.Drive()` | Transport handles (Registry[*DriveHandle]) |
+| `c.Fs()` | Filesystem I/O (sandboxable) |
+| `c.Process()` | Managed execution (Action sugar) |
+| `c.API()` | Remote streams (protocol handlers) |
+| `c.Action(name)` | Named callable (register/invoke) |
+| `c.Task(name)` | Composed Action sequence |
+| `c.Entitled(name)` | Permission check |
+| `c.RegistryOf(n)` | Cross-cutting registry queries |
+| `c.Cli()` | CLI command framework |
+| `c.IPC()` | Message bus (ACTION, QUERY) |
+| `c.Log()` | Structured logging |
+| `c.Error()` | Panic recovery |
+| `c.I18n()` | Internationalisation |
 
 #### Primitive Types
 
@@ -230,22 +236,22 @@ c.RegisterAction(func(c *core.Core, msg core.Message) core.Result {
 
 #### Process Execution — Use Core Primitives
 
-All external command execution MUST go through `go-process`, not raw `os/exec`. This makes process execution testable, observable via IPC, and managed by Core's lifecycle.
+All external command execution MUST go through `c.Process()`, not raw `os/exec`. This makes process execution testable, gatable by entitlements, and managed by Core's lifecycle.
 
 ```go
-// AX-native: go-process via Core
-out, err := process.RunWithOptions(ctx, process.RunOptions{
-    Command: "git", Args: []string{"log", "--oneline", "-20"},
-    Dir: repoDir,
-})
+// AX-native: Core Process primitive
+r := c.Process().RunIn(ctx, repoDir, "git", "log", "--oneline", "-20")
+if r.OK { output := r.Value.(string) }
 
-// Not AX: raw exec.Command — untestable, no IPC, no lifecycle
+// Not AX: raw exec.Command — untestable, no entitlement, no lifecycle
 cmd := exec.Command("git", "log", "--oneline", "-20")
 cmd.Dir = repoDir
 out, err := cmd.Output()
 ```
 
 **Rule:** If a package imports `os/exec`, it is bypassing Core's process primitive. The only package that should import `os/exec` is `go-process` itself.
+
+**Quality gate:** An agent reviewing a diff can mechanically check: does this import `os/exec`, `unsafe`, or `encoding/json` directly? If so, it bypassed a Core primitive.
 
 #### What This Replaces
 
@@ -255,7 +261,9 @@ out, err := cmd.Output()
 | `func Must*(v) T` | `core.Result` | No hidden panics; errors flow through Result.OK |
 | `func *For[T](c) T` | `c.Service("name")` | String lookup is greppable; generics require type context |
 | `val, err :=` everywhere | Single return via `core.Result` | Intent not obscured by error handling |
-| `exec.Command(...)` | `process.Run(ctx, cmd, args...)` | Testable, observable, lifecycle-managed |
+| `exec.Command(...)` | `c.Process().Run(ctx, cmd, args...)` | Testable, gatable, lifecycle-managed |
+| `map[string]*T + mutex` | `core.Registry[T]` | Thread-safe, ordered, lockable, queryable |
+| untyped `any` dispatch | `c.Action("name").Run(ctx, opts)` | Named, typed, inspectable, entitlement-checked |
 
 ### 7. Tests as Behavioural Specification
 
@@ -301,6 +309,42 @@ done
 | `TestFoo_works` | `TestFile_Foo_Good` | File prefix enables cross-file search |
 | Unnamed table tests | Explicit Good/Bad/Ugly | Categories are scannable without reading test body |
 | Coverage % as metric | Missing categories as metric | 100% coverage with only Good tests is a false signal |
+
+### 8. RFC as Domain Load
+
+An agent's first action in a session should be loading the repo's RFC.md. The full spec in context produces zero-correction sessions — every decision aligns with the design because the design is loaded.
+
+**Validated:** Loading core/go's RFC.md (42k tokens from a 500k token discovery session) at session start eliminated all course corrections. The spec is compressed domain knowledge that survives context compaction.
+
+**Rule:** Every repo that has non-trivial architecture should have a `docs/RFC.md`. The RFC is not documentation for humans — it's a context document for agents. It should be loadable in one read and contain everything needed to make correct decisions.
+
+### 9. Primitives as Quality Gates
+
+Core primitives become mechanical code review rules. An agent reviewing a diff checks:
+
+| Import | Violation | Use Instead |
+|--------|-----------|-------------|
+| `os/exec` | Bypasses Process primitive | `c.Process().Run()` |
+| `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
+| `encoding/json` | Bypasses Core serialisation | Core JSON helpers (future) |
+| `fmt.Errorf` | Bypasses error primitive | `core.E()` |
+| `errors.New` | Bypasses error primitive | `core.E()` |
+| `log.*` | Bypasses logging | `core.Info()` / `c.Log()` |
+
+**Rule:** If a diff introduces a disallowed import, it failed code review. The import list IS the quality gate. No subjective judgement needed — a weaker model can enforce this mechanically.
+
+### 10. Registration IS Capability, Entitlement IS Permission
+
+Two layers of permission, both declarative:
+
+```
+Registration = "this action EXISTS"     → c.Action("process.run").Exists()
+Entitlement  = "this Core is ALLOWED"  → c.Entitled("process.run").Allowed
+```
+
+A sandboxed Core has no `process.run` registered — the action doesn't exist. A SaaS Core has it registered but entitlement-gated — the action exists but the workspace may not be allowed to use it.
+
+**Rule:** Never check permissions with `if` statements in business logic. Register capabilities as Actions. Gate them with Entitlements. The framework enforces both — `Action.Run()` checks both before executing.
 
 ## Applying AX to Existing Patterns
 
@@ -371,9 +415,11 @@ c.Command("issue/get", core.Command{
 ### Process Execution
 
 ```go
-// AX-native: go-process helpers, testable
+// AX-native: Core Process primitive, testable with mock handler
 func (s *PrepSubsystem) getGitLog(repoPath string) string {
-    return gitOutput(context.Background(), repoPath, "log", "--oneline", "-20")
+    r := s.core.Process().RunIn(context.Background(), repoPath, "git", "log", "--oneline", "-20")
+    if !r.OK { return "" }
+    return core.Trim(r.Value.(string))
 }
 
 // Not AX: raw exec.Command, untestable without real git
@@ -381,9 +427,7 @@ func (s *PrepSubsystem) getGitLog(repoPath string) string {
     cmd := exec.Command("git", "log", "--oneline", "-20")
     cmd.Dir = repoPath
     output, err := cmd.Output()
-    if err != nil {
-        return ""
-    }
+    if err != nil { return "" }
     return strings.TrimSpace(string(output))
 }
 ```
@@ -415,6 +459,5 @@ Priority order:
 
 ## Changelog
 
-- 2026-03-25: Major update — aligned all examples to v0.7.0 API (Option{Key,Value}, WithService, Result without generics). Added Principle 7 (Tests as Behavioural Specification). Added go-process rule to Principle 6. Updated all code examples to match actual implementation. Added command extraction and process execution patterns.
-- 2026-03-20: Updated to match implementation — Option K/V atoms, Options as []Option, Data/Drive split, ErrorPanic/ErrorLog renames, subsystem table
-- 2026-03-19: Initial draft
+- 2026-03-25: v0.8.0 alignment — all examples match implemented API. Added Principles 8 (RFC as Domain Load), 9 (Primitives as Quality Gates), 10 (Registration + Entitlement). Updated subsystem table (Process, API, Action, Task, Entitled, RegistryOf). Process examples use `c.Process()` not old `process.RunWithOptions`. Removed PERFORM references.
+- 2026-03-19: Initial draft — 7 principles

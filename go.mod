@@ -11,6 +11,15 @@ require (
 )
 
 require (
+	dappco.re/go/core v0.5.0
+	dappco.re/go/core/api v0.2.0
+	dappco.re/go/core/i18n v0.2.0
+	dappco.re/go/core/io v0.2.0
+	dappco.re/go/core/log v0.1.0
+	dappco.re/go/core/process v0.3.0
+	dappco.re/go/core/scm v0.4.0
+	dappco.re/go/core/store v0.2.0
+	dappco.re/go/core/ws v0.3.0
 	forge.lthn.ai/core/go v0.3.3 // indirect
 	forge.lthn.ai/core/go-i18n v0.1.8 // indirect
 	forge.lthn.ai/core/go-inference v0.1.7 // indirect
