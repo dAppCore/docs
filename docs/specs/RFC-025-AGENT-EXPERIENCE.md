@@ -509,21 +509,46 @@ The conventions diverge from community patterns (functional options, Must/For, e
 
 ## Adoption
 
-AX applies to all new code in the Core ecosystem. Existing code migrates incrementally as it is touched — no big-bang rewrite.
+AX applies to all code in the Core ecosystem. core/go is fully migrated (v0.8.0). Consumer packages migrate via their RFCs.
 
-Priority order:
-1. **Public APIs** (package-level functions, struct constructors)
-2. **Test naming** (AX-7 Good/Bad/Ugly convention)
-3. **Process execution** (exec.Command → `c.Process()`)
-4. **File structure** (path naming, template locations)
-5. **Internal fields** (struct field names, local variables)
+Priority for migrating a package:
+1. **Lifecycle** — `OnStartup`/`OnShutdown` return `Result`
+2. **Actions** — register capabilities as named Actions
+3. **Process** — `exec.Command` → `c.Process()`
+4. **Test naming** — `TestFile_Function_{Good,Bad,Ugly}`
+5. **Imports** — replace disallowed imports (Principle 9)
+6. **JSON** — `encoding/json` → `core.JSONMarshal()`/`core.JSONUnmarshal()`
+7. **Validation** — inline checks → `core.ValidateName()`/`core.SanitisePath()`
+
+## Verification
+
+An agent auditing AX compliance checks:
+
+```bash
+# Disallowed imports (Principle 9)
+grep -rn '"os/exec"\|"unsafe"\|"encoding/json"\|"fmt"\|"errors"\|"log"' *.go \
+  | grep -v _test.go | grep -v "// allowed:"
+
+# Test naming (Principle 7)
+grep "^func Test" *_test.go | grep -v "Test[A-Z][a-z]*_.*_\(Good\|Bad\|Ugly\)"
+
+# Magic methods (should only be HandleIPCEvents)
+grep "interface {" *.go | grep -v "Startable\|Stoppable\|Stream"
+
+# Untyped dispatch (should prefer named Actions)
+grep "RegisterTask\|PERFORM\|type Task any" *.go
+```
+
+If any check produces output, the code needs migration.
 
 ## References
 
-- dAppServer unified path convention (2024)
-- CoreGO DTO pattern refactor (2026-03-18)
-- Core primitives design (2026-03-19)
-- RFC-011: OSS DRM — reference for RFC detail level
+- `core/go/docs/RFC.md` — CoreGO API contract (21 sections, reference implementation)
+- `core/go-process/docs/RFC.md` — Process consumer spec
+- `core/agent/docs/RFC.md` — Agent consumer spec
+- RFC-004 (Entitlements) — permission model ported to `c.Entitled()`
+- RFC-021 (Core Platform Architecture) — 7-layer stack, provider model
+- dAppServer unified path convention (2024) — path = route = command = test
 - Go Proverbs, Rob Pike (2015) — AX provides an updated lens
 
 ## Changelog
