@@ -1,6 +1,6 @@
 # RFC-025: Agent Experience (AX) Design Principles
 
-- **Status:** Draft
+- **Status:** Active
 - **Authors:** Snider, Cladius
 - **Date:** 2026-03-25
 - **Applies to:** All Core ecosystem packages (CoreGO, CorePHP, CoreTS, core-agent)
@@ -424,15 +424,16 @@ func Register(c *core.Core) (*MyService, error) {
 
 ```go
 // AX-native: extracted methods, testable without CLI
-func (s *PrepSubsystem) registerForgeCommands() {
-    c := s.core
-    c.Command("issue/get", core.Command{Description: "Get a Forge issue", Action: s.cmdIssueGet})
-    c.Command("issue/list", core.Command{Description: "List Forge issues", Action: s.cmdIssueList})
+func (s *MyService) OnStartup(ctx context.Context) core.Result {
+    c := s.Core()
+    c.Command("issue/get", core.Command{Action: s.cmdIssueGet})
+    c.Command("issue/list", core.Command{Action: s.cmdIssueList})
+    c.Action("forge.issue.get", s.handleIssueGet)
+    return core.Result{OK: true}
 }
 
-func (s *PrepSubsystem) cmdIssueGet(opts core.Options) core.Result {
-    org, repo, num := parseForgeArgs(opts)
-    // ... testable business logic
+func (s *MyService) cmdIssueGet(opts core.Options) core.Result {
+    // testable business logic — no closure, no CLI dependency
 }
 
 // Not AX: closures that can only be tested via CLI integration
@@ -447,21 +448,23 @@ c.Command("issue/get", core.Command{
 
 ```go
 // AX-native: Core Process primitive, testable with mock handler
-func (s *PrepSubsystem) getGitLog(repoPath string) string {
-    r := s.core.Process().RunIn(context.Background(), repoPath, "git", "log", "--oneline", "-20")
+func (s *MyService) getGitLog(repoPath string) string {
+    r := s.Core().Process().RunIn(context.Background(), repoPath, "git", "log", "--oneline", "-20")
     if !r.OK { return "" }
     return core.Trim(r.Value.(string))
 }
 
-// Not AX: raw exec.Command, untestable without real git
-func (s *PrepSubsystem) getGitLog(repoPath string) string {
+// Not AX: raw exec.Command — untestable, no entitlement check, path traversal risk
+func (s *MyService) getGitLog(repoPath string) string {
     cmd := exec.Command("git", "log", "--oneline", "-20")
-    cmd.Dir = repoPath
+    cmd.Dir = repoPath  // user-controlled path goes directly to OS
     output, err := cmd.Output()
     if err != nil { return "" }
     return strings.TrimSpace(string(output))
 }
 ```
+
+The AX-native version routes through `c.Process()` → named Action → entitlement check. The non-AX version passes user input directly to `os/exec` with no permission gate.
 
 ### Permission Gating
 
@@ -495,7 +498,7 @@ AX applies to all new code in the Core ecosystem. Existing code migrates increme
 Priority order:
 1. **Public APIs** (package-level functions, struct constructors)
 2. **Test naming** (AX-7 Good/Bad/Ugly convention)
-3. **Process execution** (exec.Command → go-process)
+3. **Process execution** (exec.Command → `c.Process()`)
 4. **File structure** (path naming, template locations)
 5. **Internal fields** (struct field names, local variables)
 
