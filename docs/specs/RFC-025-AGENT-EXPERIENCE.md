@@ -215,23 +215,53 @@ opts.Int("port")    // 8080
 core.Result{Value: svc, OK: true}
 ```
 
-#### IPC — Event-Driven Communication
+#### Named Actions — The Primary Communication Pattern
 
-Services communicate via typed messages through Core's ACTION system. No direct function calls between services — declare intent, let the event system route it.
+Services register capabilities as named Actions. No direct function calls, no untyped dispatch — declare intent by name, invoke by name.
 
 ```go
-// Broadcast an event
-c.ACTION(messages.AgentCompleted{
-    Agent: "codex", Repo: "go-io", Status: "completed",
+// Register a capability during OnStartup
+c.Action("workspace.create", func(ctx context.Context, opts core.Options) core.Result {
+    name := opts.String("name")
+    path := core.JoinPath("/srv/workspaces", name)
+    return core.Result{Value: path, OK: true}
 })
 
-// Register a handler
-c.RegisterAction(func(c *core.Core, msg core.Message) core.Result {
-    if ev, ok := msg.(messages.AgentCompleted); ok {
-        // react to completion
-    }
-    return core.Result{OK: true}
+// Invoke by name — typed, inspectable, entitlement-checked
+r := c.Action("workspace.create").Run(ctx, core.NewOptions(
+    core.Option{Key: "name", Value: "alpha"},
+))
+
+// Check capability before calling
+if c.Action("process.run").Exists() { /* go-process is registered */ }
+
+// List all capabilities
+c.Actions()  // ["workspace.create", "process.run", "brain.recall", ...]
+```
+
+#### Task Composition — Sequencing Actions
+
+```go
+c.Task("agent.completion", core.Task{
+    Steps: []core.Step{
+        {Action: "agentic.qa"},
+        {Action: "agentic.auto-pr"},
+        {Action: "agentic.verify"},
+        {Action: "agentic.poke", Async: true},  // doesn't block
+    },
 })
+```
+
+#### Anonymous Broadcast — Legacy Layer
+
+`ACTION` and `QUERY` remain for backwards-compatible anonymous dispatch. New code should prefer named Actions.
+
+```go
+// Broadcast — all handlers fire, type-switch to filter
+c.ACTION(messages.DeployCompleted{Env: "production"})
+
+// Query — first responder wins
+r := c.QUERY(countQuery{})
 ```
 
 #### Process Execution — Use Core Primitives
@@ -326,7 +356,7 @@ Core primitives become mechanical code review rules. An agent reviewing a diff c
 |--------|-----------|-------------|
 | `os/exec` | Bypasses Process primitive | `c.Process().Run()` |
 | `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
-| `encoding/json` | Bypasses Core serialisation | Core JSON helpers (future) |
+| `encoding/json` | Bypasses Core serialisation | `core.JSONMarshal()` / `core.JSONUnmarshal()` |
 | `fmt.Errorf` | Bypasses error primitive | `core.E()` |
 | `errors.New` | Bypasses error primitive | `core.E()` |
 | `log.*` | Bypasses logging | `core.Info()` / `c.Log()` |
