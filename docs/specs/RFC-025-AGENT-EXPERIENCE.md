@@ -59,19 +59,20 @@ Options   not  Opts
 The function signature tells WHAT. The comment shows HOW with real values.
 
 ```go
-// NewPrep creates an agentic subsystem.
+// Entitled checks if an action is permitted.
 //
-//	sub := agentic.NewPrep()
-//	sub.SetCore(c)
-//	sub.RegisterTools(server)
+//   e := c.Entitled("process.run")
+//   e := c.Entitled("social.accounts", 3)
+//   if e.Allowed { proceed() }
 
-// Detect the project type from files present.
+// WriteAtomic writes via temp file then rename (safe for concurrent readers).
 //
-//	projType := setup.Detect("./repo")
+//   r := fs.WriteAtomic("/status.json", data)
 
-// Set up a workspace with auto-detected template.
+// Action registers or invokes a named callable.
 //
-//	err := setup.Run(setup.Options{Path: ".", Template: "auto"})
+//   c.Action("git.log", handler)           // register
+//   c.Action("git.log").Run(ctx, opts)     // invoke
 ```
 
 **Rule:** If a comment restates what the type signature already says, delete it. If a comment shows a concrete usage with realistic values, keep it.
@@ -84,11 +85,12 @@ File and directory paths should be self-describing. An agent navigating the file
 
 ```
 pkg/agentic/dispatch.go         — agent dispatch logic
-pkg/agentic/proc.go             — process execution helpers
+pkg/agentic/handlers.go         — IPC event handlers
 pkg/lib/task/bug-fix.yaml       — bug fix plan template
 pkg/lib/persona/engineering/     — engineering personas
 flow/deploy/to/homelab.yaml     — deploy TO the homelab
 template/dir/workspace/default/  — default workspace scaffold
+docs/RFC.md                      — authoritative API contract
 ```
 
 **Rule:** If an agent needs to read a file to understand what a directory contains, the directory naming has failed.
@@ -137,7 +139,7 @@ steps:
 cmd := exec.Command("docker", "build", "--platform", "linux/amd64", "-t", imageName, ".")
 cmd.Dir = appDir
 if err := cmd.Run(); err != nil {
-    return fmt.Errorf("docker build: %w", err)
+    return core.E("build", "docker build failed", err)
 }
 ```
 
@@ -168,10 +170,10 @@ c.Run()  // or: if err := c.RunE(); err != nil { ... }
 ```go
 // Service factory — receives Core, returns Result
 func Register(c *core.Core) core.Result {
-    sub := NewPrep()
-    sub.SetCore(c)
-    RegisterHandlers(c, sub)
-    return core.Result{Value: sub, OK: true}
+    svc := &MyService{
+        ServiceRuntime: core.NewServiceRuntime(c, MyOptions{}),
+    }
+    return core.Result{Value: svc, OK: true}
 }
 ```
 
@@ -404,18 +406,17 @@ src/
 ```go
 // AX-native: errors flow through Result, not call sites
 func Register(c *core.Core) core.Result {
-    sub := NewPrep()
-    sub.SetCore(c)
-    return core.Result{Value: sub, OK: true}
+    svc := &MyService{ServiceRuntime: core.NewServiceRuntime(c, MyOpts{})}
+    return core.Result{Value: svc, OK: true}
 }
 
 // Not AX: errors dominate the code
-func Register(c *core.Core) (*PrepSubsystem, error) {
-    sub := NewPrep()
-    if err := sub.SetCore(c); err != nil {
-        return nil, fmt.Errorf("set core: %w", err)
+func Register(c *core.Core) (*MyService, error) {
+    svc, err := NewMyService(c)
+    if err != nil {
+        return nil, fmt.Errorf("create service: %w", err)
     }
-    return sub, nil
+    return svc, nil
 }
 ```
 
@@ -459,6 +460,25 @@ func (s *PrepSubsystem) getGitLog(repoPath string) string {
     output, err := cmd.Output()
     if err != nil { return "" }
     return strings.TrimSpace(string(output))
+}
+```
+
+### Permission Gating
+
+```go
+// AX-native: entitlement checked by framework, not by business logic
+c.Action("agentic.dispatch", func(ctx context.Context, opts core.Options) core.Result {
+    // Action.Run() already checked c.Entitled("agentic.dispatch")
+    // If we're here, we're allowed. Just do the work.
+    return dispatch(ctx, opts)
+})
+
+// Not AX: permission logic scattered through business code
+func handleDispatch(ctx context.Context, opts core.Options) core.Result {
+    if !isAdmin(ctx) && !hasPlan(ctx, "pro") {
+        return core.Result{Value: core.E("dispatch", "upgrade required", nil), OK: false}
+    }
+    // duplicate permission check in every handler
 }
 ```
 
