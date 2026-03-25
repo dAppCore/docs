@@ -22,6 +22,7 @@ Design patterns inherited from the human-developer era optimise for the wrong co
 - **Error-at-every-call-site** produces 50% boilerplate that obscures intent
 - **Generic type parameters** force agents to carry type context that the runtime already has
 - **Panic-hiding conventions** (`Must*`) create implicit control flow that agents must special-case
+- **Raw exec.Command** bypasses Core primitives, making process execution untestable
 
 AX acknowledges this shift and provides principles for designing code, APIs, file structures, and conventions that serve AI agents as first-class consumers.
 
@@ -58,14 +59,19 @@ Options   not  Opts
 The function signature tells WHAT. The comment shows HOW with real values.
 
 ```go
-// Detect the project type from files present
-setup.Detect("/path/to/project")
+// NewPrep creates an agentic subsystem.
+//
+//	sub := agentic.NewPrep()
+//	sub.SetCore(c)
+//	sub.RegisterTools(server)
 
-// Set up a workspace with auto-detected template
-setup.Run(setup.Options{Path: ".", Template: "auto"})
+// Detect the project type from files present.
+//
+//	projType := setup.Detect("./repo")
 
-// Scaffold a PHP module workspace
-setup.Run(setup.Options{Path: "./my-module", Template: "php"})
+// Set up a workspace with auto-detected template.
+//
+//	err := setup.Run(setup.Options{Path: ".", Template: "auto"})
 ```
 
 **Rule:** If a comment restates what the type signature already says, delete it. If a comment shows a concrete usage with realistic values, keep it.
@@ -77,11 +83,12 @@ setup.Run(setup.Options{Path: "./my-module", Template: "php"})
 File and directory paths should be self-describing. An agent navigating the filesystem should understand what it is looking at without reading a README.
 
 ```
-flow/deploy/to/homelab.yaml    — deploy TO the homelab
-flow/deploy/from/github.yaml   — deploy FROM GitHub
-flow/code/review.yaml           — code review flow
-template/file/go/struct.go.tmpl — Go struct file template
-template/dir/workspace/php/     — PHP workspace scaffold
+pkg/agentic/dispatch.go         — agent dispatch logic
+pkg/agentic/proc.go             — process execution helpers
+pkg/lib/task/bug-fix.yaml       — bug fix plan template
+pkg/lib/persona/engineering/     — engineering personas
+flow/deploy/to/homelab.yaml     — deploy TO the homelab
+template/dir/workspace/default/  — default workspace scaffold
 ```
 
 **Rule:** If an agent needs to read a file to understand what a directory contains, the directory naming has failed.
@@ -94,11 +101,12 @@ When an agent generates code from a template, the output is constrained to known
 
 ```go
 // Template-driven — consistent output
-lib.RenderFile("php/action", data)
-lib.ExtractDir("php", targetDir, data)
+lib.ExtractWorkspace("default", targetDir, &lib.WorkspaceData{
+    Repo: "go-io", Branch: "dev", Task: "fix tests", Agent: "codex",
+})
 
 // Freeform — variance in output
-"write a PHP action class that..."
+"write a workspace setup script that..."
 ```
 
 **Rule:** For any code pattern that recurs, provide a template. Templates are guardrails for agents.
@@ -135,87 +143,119 @@ if err := cmd.Run(); err != nil {
 
 **Rule:** Orchestration, configuration, and pipeline logic should be declarative (YAML/JSON). Implementation logic should be imperative (Go/PHP/TS). The boundary is: if an agent needs to compose or modify the logic, make it declarative.
 
-### 6. Universal Types (Core Primitives)
+### 6. Core Primitives — Universal Types and DI
 
-Every component in the ecosystem accepts and returns the same primitive types. An agent processing any level of the tree sees identical shapes.
+Every component in the ecosystem registers with Core and communicates through Core's primitives. An agent processing any level of the tree sees identical shapes.
 
-`Option` is a single key-value pair. `Options` is a collection. Any function that returns `Result` can accept `Options`.
+#### Creating Core
 
 ```go
-// Option — the atom
-core.Option{K: "name", V: "brain"}
+c := core.New(
+    core.WithOption("name", "core-agent"),
+    core.WithService(process.NewService(process.Options{})),
+    core.WithService(agentic.Register),
+    core.WithService(monitor.Register),
+    core.WithService(brain.Register),
+    core.WithService(mcp.Register),
+)
+c.Run()
+```
 
-// Options — universal input (collection of Option)
-core.Options{
-    {K: "name", V: "myapp"},
-    {K: "port", V: 8080},
+`core.New()` accepts functional options. `WithService` registers a service factory that receives `*Core` and returns `Result`. Services are auto-discovered: name from package path, lifecycle from `Startable`/`Stoppable` interfaces, IPC handlers from `HandleIPCEvents`.
+
+#### Service Registration Pattern
+
+```go
+// Service factory — receives Core, returns Result
+func Register(c *core.Core) core.Result {
+    sub := NewPrep()
+    sub.SetCore(c)
+    RegisterHandlers(c, sub)
+    return core.Result{Value: sub, OK: true}
 }
-
-// Result[T] — universal return
-core.Result[*Embed]{Value: emb, OK: true}
 ```
 
-Usage across subsystems — same shape everywhere:
-
-```go
-// Create Core
-c := core.New(core.Options{{K: "name", V: "myapp"}})
-
-// Mount embedded content
-c.Data().New(core.Options{
-    {K: "name", V: "brain"},
-    {K: "source", V: brainFS},
-    {K: "path", V: "prompts"},
-})
-
-// Register a transport handle
-c.Drive().New(core.Options{
-    {K: "name", V: "api"},
-    {K: "transport", V: "https://api.lthn.ai"},
-})
-
-// Read back what was passed in
-c.Options().String("name") // "myapp"
-```
-
-**Core primitive types:**
-
-| Type | Purpose |
-|------|---------|
-| `core.Option` | Single key-value pair (the atom) |
-| `core.Options` | Collection of Option (universal input) |
-| `core.Result[T]` | Return value with OK/fail state (universal output) |
-| `core.Config` | Runtime settings (what is active) |
-| `core.Data` | Embedded or stored content from packages |
-| `core.Drive` | Resource handle registry (transports) |
-| `core.Service` | A managed component with lifecycle |
-
-**Core struct subsystems:**
+#### Core Subsystem Accessors
 
 | Accessor | Analogy | Purpose |
 |----------|---------|---------|
 | `c.Options()` | argv | Input configuration used to create this Core |
+| `c.App()` | — | Application metadata (name, version) |
 | `c.Data()` | /mnt | Embedded assets mounted by packages |
 | `c.Drive()` | /dev | Transport handles (API, MCP, SSH, VPN) |
 | `c.Config()` | /etc | Configuration, settings, feature flags |
 | `c.Fs()` | / | Local filesystem I/O (sandboxable) |
-| `c.Error()` | — | Panic recovery and crash reporting (`ErrorPanic`) |
+| `c.Error()` | — | Panic recovery (`ErrorPanic`) |
 | `c.Log()` | — | Structured logging (`ErrorLog`) |
-| `c.Service()` | — | Service registry and lifecycle |
 | `c.Cli()` | — | CLI command framework |
-| `c.IPC()` | — | Message bus |
+| `c.IPC()` | — | Message bus (ACTION, QUERY, PERFORM) |
 | `c.I18n()` | — | Internationalisation |
 
-**What this replaces:**
+#### Primitive Types
+
+```go
+// Option — the atom
+core.Option{Key: "name", Value: "brain"}
+
+// Options — universal input
+opts := core.NewOptions(
+    core.Option{Key: "name", Value: "myapp"},
+    core.Option{Key: "port", Value: 8080},
+)
+opts.String("name") // "myapp"
+opts.Int("port")    // 8080
+
+// Result — universal output
+core.Result{Value: svc, OK: true}
+```
+
+#### IPC — Event-Driven Communication
+
+Services communicate via typed messages through Core's ACTION system. No direct function calls between services — declare intent, let the event system route it.
+
+```go
+// Broadcast an event
+c.ACTION(messages.AgentCompleted{
+    Agent: "codex", Repo: "go-io", Status: "completed",
+})
+
+// Register a handler
+c.RegisterAction(func(c *core.Core, msg core.Message) core.Result {
+    if ev, ok := msg.(messages.AgentCompleted); ok {
+        // react to completion
+    }
+    return core.Result{OK: true}
+})
+```
+
+#### Process Execution — Use Core Primitives
+
+All external command execution MUST go through `go-process`, not raw `os/exec`. This makes process execution testable, observable via IPC, and managed by Core's lifecycle.
+
+```go
+// AX-native: go-process via Core
+out, err := process.RunWithOptions(ctx, process.RunOptions{
+    Command: "git", Args: []string{"log", "--oneline", "-20"},
+    Dir: repoDir,
+})
+
+// Not AX: raw exec.Command — untestable, no IPC, no lifecycle
+cmd := exec.Command("git", "log", "--oneline", "-20")
+cmd.Dir = repoDir
+out, err := cmd.Output()
+```
+
+**Rule:** If a package imports `os/exec`, it is bypassing Core's process primitive. The only package that should import `os/exec` is `go-process` itself.
+
+#### What This Replaces
 
 | Go Convention | Core AX | Why |
 |--------------|---------|-----|
-| `func With*(v) Option` | `core.Options{{K: k, V: v}}` | K/V pairs are parseable; option chains require tracing |
-| `func Must*(v) T` | `core.Result[T]` | No hidden panics; errors flow through Core |
+| `func With*(v) Option` | `core.WithOption(k, v)` | Named key-value is greppable; option chains require tracing |
+| `func Must*(v) T` | `core.Result` | No hidden panics; errors flow through Result.OK |
 | `func *For[T](c) T` | `c.Service("name")` | String lookup is greppable; generics require type context |
 | `val, err :=` everywhere | Single return via `core.Result` | Intent not obscured by error handling |
-| `_ = err` | Never needed | Core handles all errors internally |
-| `ErrPan` / `ErrLog` | `ErrorPanic` / `ErrorLog` | Full names — AX principle 1 |
+| `exec.Command(...)` | `process.Run(ctx, cmd, args...)` | Testable, observable, lifecycle-managed |
 
 ### 7. Tests as Behavioural Specification
 
@@ -239,11 +279,16 @@ TestDispatch_DetectFinalStatus_Ugly    — BLOCKED.md overrides exit code
 
 ```bash
 # Find under-tested functions
-grep "^func " dispatch.go | while read fn; do
-  name=$(echo $fn | sed 's/func.*) //; s/(.*//');
-  grep -q "_${name}_Good" *_test.go || echo "$name: missing Good"
-  grep -q "_${name}_Bad"  *_test.go || echo "$name: missing Bad"
-  grep -q "_${name}_Ugly" *_test.go || echo "$name: missing Ugly"
+for f in *.go; do
+  [[ "$f" == *_test.go ]] && continue
+  while IFS= read -r line; do
+    fn=$(echo "$line" | sed 's/func.*) //; s/(.*//; s/ .*//')
+    [[ -z "$fn" || "$fn" == register* ]] && continue
+    cap="${fn^}"
+    grep -q "_${cap}_Good\|_${fn}_Good" *_test.go || echo "$f: $fn missing Good"
+    grep -q "_${cap}_Bad\|_${fn}_Bad"   *_test.go || echo "$f: $fn missing Bad"
+    grep -q "_${cap}_Ugly\|_${fn}_Ugly" *_test.go || echo "$f: $fn missing Ugly"
+  done < <(grep "^func " "$f")
 done
 ```
 
@@ -264,11 +309,14 @@ done
 ```
 # AX-native: path describes content
 core/agent/
-├── go/                    # Go source
-├── php/                   # PHP source
-├── ui/                    # Frontend source
-├── claude/                # Claude Code plugin
-└── codex/                 # Codex plugin
+├── cmd/core-agent/          # CLI entry point (minimal — just core.New + Run)
+├── pkg/agentic/             # Agent orchestration (dispatch, prep, verify, scan)
+├── pkg/brain/               # OpenBrain integration
+├── pkg/lib/                 # Embedded templates, personas, flows
+├── pkg/messages/            # Typed IPC message definitions
+├── pkg/monitor/             # Agent monitoring + notifications
+├── pkg/setup/               # Workspace scaffolding + detection
+└── claude/                  # Claude Code plugin definitions
 
 # Not AX: generic names requiring README
 src/
@@ -280,39 +328,64 @@ src/
 ### Error Handling
 
 ```go
-// AX-native: errors are infrastructure, not application logic
-svc := c.Service("brain")
-cfg := c.Config().Get("database.host")
-// Errors logged by Core. Code reads like a spec.
+// AX-native: errors flow through Result, not call sites
+func Register(c *core.Core) core.Result {
+    sub := NewPrep()
+    sub.SetCore(c)
+    return core.Result{Value: sub, OK: true}
+}
 
 // Not AX: errors dominate the code
-svc, err := c.ServiceFor[brain.Service]()
-if err != nil {
-    return fmt.Errorf("get brain service: %w", err)
-}
-cfg, err := c.Config().Get("database.host")
-if err != nil {
-    _ = err // silenced because "it'll be fine"
+func Register(c *core.Core) (*PrepSubsystem, error) {
+    sub := NewPrep()
+    if err := sub.SetCore(c); err != nil {
+        return nil, fmt.Errorf("set core: %w", err)
+    }
+    return sub, nil
 }
 ```
 
-### API Design
+### Command Registration
 
 ```go
-// AX-native: one shape, every surface
-c := core.New(core.Options{
-    {K: "name", V: "my-app"},
-})
-c.Service("process", processSvc)
-c.Data().New(core.Options{{K: "name", V: "app"}, {K: "source", V: appFS}})
+// AX-native: extracted methods, testable without CLI
+func (s *PrepSubsystem) registerForgeCommands() {
+    c := s.core
+    c.Command("issue/get", core.Command{Description: "Get a Forge issue", Action: s.cmdIssueGet})
+    c.Command("issue/list", core.Command{Description: "List Forge issues", Action: s.cmdIssueList})
+}
 
-// Not AX: multiple patterns for the same thing
-c, err := core.New(
-    core.WithName("my-app"),
-    core.WithService(factory1),
-    core.WithAssets(appFS),
-)
-if err != nil { ... }
+func (s *PrepSubsystem) cmdIssueGet(opts core.Options) core.Result {
+    org, repo, num := parseForgeArgs(opts)
+    // ... testable business logic
+}
+
+// Not AX: closures that can only be tested via CLI integration
+c.Command("issue/get", core.Command{
+    Action: func(opts core.Options) core.Result {
+        // 50 lines of untestable inline logic
+    },
+})
+```
+
+### Process Execution
+
+```go
+// AX-native: go-process helpers, testable
+func (s *PrepSubsystem) getGitLog(repoPath string) string {
+    return gitOutput(context.Background(), repoPath, "log", "--oneline", "-20")
+}
+
+// Not AX: raw exec.Command, untestable without real git
+func (s *PrepSubsystem) getGitLog(repoPath string) string {
+    cmd := exec.Command("git", "log", "--oneline", "-20")
+    cmd.Dir = repoPath
+    output, err := cmd.Output()
+    if err != nil {
+        return ""
+    }
+    return strings.TrimSpace(string(output))
+}
 ```
 
 ## Compatibility
@@ -327,18 +400,21 @@ AX applies to all new code in the Core ecosystem. Existing code migrates increme
 
 Priority order:
 1. **Public APIs** (package-level functions, struct constructors)
-2. **File structure** (path naming, template locations)
-3. **Internal fields** (struct field names, local variables)
+2. **Test naming** (AX-7 Good/Bad/Ugly convention)
+3. **Process execution** (exec.Command → go-process)
+4. **File structure** (path naming, template locations)
+5. **Internal fields** (struct field names, local variables)
 
 ## References
 
 - dAppServer unified path convention (2024)
 - CoreGO DTO pattern refactor (2026-03-18)
 - Core primitives design (2026-03-19)
+- RFC-011: OSS DRM — reference for RFC detail level
 - Go Proverbs, Rob Pike (2015) — AX provides an updated lens
 
 ## Changelog
 
-- 2026-03-25: Added Principle 7 — Tests as Behavioural Specification (TestFile_Function_{Good,Bad,Ugly})
+- 2026-03-25: Major update — aligned all examples to v0.7.0 API (Option{Key,Value}, WithService, Result without generics). Added Principle 7 (Tests as Behavioural Specification). Added go-process rule to Principle 6. Updated all code examples to match actual implementation. Added command extraction and process execution patterns.
 - 2026-03-20: Updated to match implementation — Option K/V atoms, Options as []Option, Data/Drive split, ErrorPanic/ErrorLog renames, subsystem table
 - 2026-03-19: Initial draft
