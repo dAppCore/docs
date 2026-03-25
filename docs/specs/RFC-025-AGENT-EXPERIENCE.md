@@ -22,7 +22,7 @@ Design patterns inherited from the human-developer era optimise for the wrong co
 - **Error-at-every-call-site** produces 50% boilerplate that obscures intent
 - **Generic type parameters** force agents to carry type context that the runtime already has
 - **Panic-hiding conventions** (`Must*`) create implicit control flow that agents must special-case
-- **Raw exec.Command** bypasses Core primitives, making process execution untestable
+- **Raw exec.Command** bypasses Core primitives — untestable, no entitlement check, path traversal risk
 
 AX acknowledges this shift and provides principles for designing code, APIs, file structures, and conventions that serve AI agents as first-class consumers.
 
@@ -145,6 +145,18 @@ if err := cmd.Run(); err != nil {
 
 **Rule:** Orchestration, configuration, and pipeline logic should be declarative (YAML/JSON). Implementation logic should be imperative (Go/PHP/TS). The boundary is: if an agent needs to compose or modify the logic, make it declarative.
 
+Core's `Task` is the Go-native declarative equivalent — a sequence of named Action steps:
+
+```go
+c.Task("deploy", core.Task{
+    Steps: []core.Step{
+        {Action: "docker.build"},
+        {Action: "docker.push"},
+        {Action: "deploy.ansible", Async: true},
+    },
+})
+```
+
 ### 6. Core Primitives — Universal Types and DI
 
 Every component in the ecosystem registers with Core and communicates through Core's primitives. An agent processing any level of the tree sees identical shapes.
@@ -163,7 +175,7 @@ c := core.New(
 c.Run()  // or: if err := c.RunE(); err != nil { ... }
 ```
 
-`core.New()` returns `*Core`. `WithService` registers a factory `func(*Core) Result`. Services auto-discover: name from package path, lifecycle from `Startable`/`Stoppable` (return `Result`), IPC from `HandleIPCEvents`.
+`core.New()` returns `*Core`. `WithService` registers a factory `func(*Core) Result`. Services auto-discover: name from package path, lifecycle from `Startable`/`Stoppable` (return `Result`). `HandleIPCEvents` is the one remaining magic method — auto-registered via reflection if the service implements it.
 
 #### Service Registration Pattern
 
@@ -341,6 +353,10 @@ done
 | `TestFoo_works` | `TestFile_Foo_Good` | File prefix enables cross-file search |
 | Unnamed table tests | Explicit Good/Bad/Ugly | Categories are scannable without reading test body |
 | Coverage % as metric | Missing categories as metric | 100% coverage with only Good tests is a false signal |
+
+### Operational Principles
+
+Principles 1-7 govern code design. Principles 8-10 govern how agents and humans work with the codebase.
 
 ### 8. RFC as Domain Load
 
