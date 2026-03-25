@@ -217,6 +217,46 @@ c.Options().String("name") // "myapp"
 | `_ = err` | Never needed | Core handles all errors internally |
 | `ErrPan` / `ErrLog` | `ErrorPanic` / `ErrorLog` | Full names — AX principle 1 |
 
+### 7. Tests as Behavioural Specification
+
+Test names are structured data. An agent querying "what happens when dispatch fails?" should find the answer by scanning test names, not reading prose.
+
+```
+TestDispatch_DetectFinalStatus_Good    — clean exit → completed
+TestDispatch_DetectFinalStatus_Bad     — non-zero exit → failed
+TestDispatch_DetectFinalStatus_Ugly    — BLOCKED.md overrides exit code
+```
+
+**Convention:** `Test{File}_{Function}_{Good|Bad|Ugly}`
+
+| Category | Purpose |
+|----------|---------|
+| `_Good` | Happy path — proves the contract works |
+| `_Bad` | Expected errors — proves error handling works |
+| `_Ugly` | Edge cases, panics, corruption — proves it doesn't blow up |
+
+**Rule:** Every testable function gets all three categories. Missing categories are gaps in the specification, detectable by scanning:
+
+```bash
+# Find under-tested functions
+grep "^func " dispatch.go | while read fn; do
+  name=$(echo $fn | sed 's/func.*) //; s/(.*//');
+  grep -q "_${name}_Good" *_test.go || echo "$name: missing Good"
+  grep -q "_${name}_Bad"  *_test.go || echo "$name: missing Bad"
+  grep -q "_${name}_Ugly" *_test.go || echo "$name: missing Ugly"
+done
+```
+
+**Rationale:** The test suite IS the behavioural spec. `grep _TrackFailureRate_ *_test.go` returns three concrete scenarios — no prose needed. The naming convention makes the entire test suite machine-queryable. An agent dispatched to fix a function can read its tests to understand the full contract before making changes.
+
+**What this replaces:**
+
+| Convention | AX Test Naming | Why |
+|-----------|---------------|-----|
+| `TestFoo_works` | `TestFile_Foo_Good` | File prefix enables cross-file search |
+| Unnamed table tests | Explicit Good/Bad/Ugly | Categories are scannable without reading test body |
+| Coverage % as metric | Missing categories as metric | 100% coverage with only Good tests is a false signal |
+
 ## Applying AX to Existing Patterns
 
 ### File Structure
@@ -299,5 +339,6 @@ Priority order:
 
 ## Changelog
 
+- 2026-03-25: Added Principle 7 — Tests as Behavioural Specification (TestFile_Function_{Good,Bad,Ugly})
 - 2026-03-20: Updated to match implementation — Option K/V atoms, Options as []Option, Data/Drive split, ErrorPanic/ErrorLog renames, subsystem table
 - 2026-03-19: Initial draft
