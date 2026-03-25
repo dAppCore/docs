@@ -402,8 +402,9 @@ Core primitives become mechanical code review rules. An agent reviewing a diff c
 | `os/exec` | Bypasses Process primitive | `c.Process().Run()` |
 | `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
 | `encoding/json` | Bypasses Core serialisation | `core.JSONMarshal()` / `core.JSONUnmarshal()` |
+| `path/filepath` | Bypasses path security boundary | `core.Path()` / `core.JoinPath()` |
 | `fmt.Errorf` | Bypasses error primitive | `core.E()` |
-| `errors.New` | Bypasses error primitive | `core.E()` |
+| `errors` | Bypasses error primitive | `core.NewError()` / `core.Is()` / `core.As()` |
 | `log.*` | Bypasses logging | `core.Info()` / `c.Log()` |
 
 **Rule:** If a diff introduces a disallowed import, it failed code review. The import list IS the quality gate. No subjective judgement needed — a weaker model can enforce this mechanically.
