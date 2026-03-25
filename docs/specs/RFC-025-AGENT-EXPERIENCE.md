@@ -354,6 +354,33 @@ done
 | Unnamed table tests | Explicit Good/Bad/Ugly | Categories are scannable without reading test body |
 | Coverage % as metric | Missing categories as metric | 100% coverage with only Good tests is a false signal |
 
+### 7b. Example Tests as AX TDD
+
+Go `Example` functions serve triple duty: they run as tests (count toward coverage), show in godoc (usage documentation), and seed user guide generation.
+
+```go
+// file: action_example_test.go
+
+func ExampleAction_Run() {
+    c := New()
+    c.Action("double", func(_ context.Context, opts Options) Result {
+        return Result{Value: opts.Int("n") * 2, OK: true}
+    })
+
+    r := c.Action("double").Run(context.Background(), NewOptions(
+        Option{Key: "n", Value: 21},
+    ))
+    fmt.Println(r.Value)
+    // Output: 42
+}
+```
+
+**AX TDD pattern:** Write the Example first — it defines how the API should feel. If the Example is awkward, the API is wrong. The Example IS the test, the documentation, and the design feedback loop.
+
+**Convention:** One `{source}_example_test.go` per source file. Every exported function should have at least one Example. The Example output comment makes it a verified test.
+
+**Quality gate:** A source file without a corresponding example file is missing documentation that compiles.
+
 ### Operational Principles
 
 Principles 1-7 govern code design. Principles 8-10 govern how agents and humans work with the codebase.
