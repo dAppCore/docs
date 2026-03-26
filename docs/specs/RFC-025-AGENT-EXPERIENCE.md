@@ -402,6 +402,7 @@ Core primitives become mechanical code review rules. An agent reviewing a diff c
 | `os` | Bypasses Fs/Env primitives | `c.Fs()`, `core.Env()`, `core.DirFS()`, `Fs.TempDir()` |
 | `os/exec` | Bypasses Process primitive | `c.Process().Run()` |
 | `io` | Bypasses stream primitives | `core.ReadAll()`, `core.WriteAll()`, `core.CloseStream()` |
+| `io/fs` | Bypasses Data/Embed primitives | `c.Data().ListNames()`, `core.Mount()`, `core.Extract()` |
 | `fmt` | Bypasses string/print primitives | `core.Println()`, `core.Sprintf()`, `core.Sprint()` |
 | `errors` | Bypasses error primitive | `core.NewError()`, `core.E()`, `core.Is()`, `core.As()` |
 | `log` | Bypasses logging | `core.Info()`, `core.Warn()`, `core.Error()`, `c.Log()` |
@@ -409,6 +410,8 @@ Core primitives become mechanical code review rules. An agent reviewing a diff c
 | `path/filepath` | Bypasses path security boundary | `core.Path()`, `core.JoinPath()`, `core.PathBase()` |
 | `unsafe` | Bypasses Fs sandbox | `Fs.NewUnrestricted()` |
 | `strings` | Bypasses string guardrails | `core.Contains()`, `core.Split()`, `core.Trim()`, etc. |
+| `net/http` | Bypasses API stream primitive | `c.API().Stream()`, `c.API().Call()`, `c.Drive()` |
+| `net/url` | Bypasses API transport config | `c.Drive().New()` with transport URL |
 
 **Rule:** If a diff introduces a disallowed import, it failed code review. The import list IS the quality gate. No subjective judgement needed — a weaker model can enforce this mechanically.
 
@@ -557,7 +560,7 @@ An agent auditing AX compliance checks:
 
 ```bash
 # Disallowed imports (Principle 9)
-grep -rn '"os"\|"os/exec"\|"io"\|"fmt"\|"errors"\|"log"\|"encoding/json"\|"path/filepath"\|"unsafe"\|"strings"' *.go \
+grep -rn '"os"\|"os/exec"\|"io"\|"io/fs"\|"fmt"\|"errors"\|"log"\|"encoding/json"\|"path/filepath"\|"unsafe"\|"strings"\|"net/http"\|"net/url"' *.go \
   | grep -v _test.go
 
 # Test naming (Principle 7)
@@ -584,5 +587,6 @@ If any check produces output, the code needs migration.
 
 ## Changelog
 
+- 2026-03-26: Added `io/fs`, `net/http`, `net/url` to Principle 9 quality gate. `io/fs` bypasses Data/Embed primitives. `net/http` bypasses API stream primitive (`c.API().Stream()`, `c.API().Call()`). Updated verification script.
 - 2026-03-25: v0.8.0 alignment — all examples match implemented API. Added Principles 8 (RFC as Domain Load), 9 (Primitives as Quality Gates), 10 (Registration + Entitlement). Updated subsystem table (Process, API, Action, Task, Entitled, RegistryOf). Process examples use `c.Process()` not old `process.RunWithOptions`. Removed PERFORM references.
 - 2026-03-19: Initial draft — 7 principles
