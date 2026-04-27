@@ -1,0 +1,35 @@
+# core/docs — Lethean Ecosystem Documentation
+
+> This repository contains the design specifications, RFCs, and documentation
+> for the Lethean ecosystem. Start with docs/RFC.md for the full spec index.
+
+## Entry Points
+
+- docs/RFC.md — RFC index (start here for design specs)
+- docs/specs/ — Individual RFC documents
+- CLAUDE.md — Agent instructions for this repository
+
+## Key Specifications
+
+- RFC-025: Agent Experience (AX) — Design paradigm for AI-first codebases
+- RFC-021: Core Platform Architecture — 7-layer stack, module system
+- RFC-011: OSS DRM — Zero-trust digital rights management
+- RFC-002: Event-Driven Modules — Module lifecycle and event system
+
+## Ecosystem
+
+- core/go (dappco.re/go/core) — Go DI framework, service lifecycle, IPC
+- core/agent (dappco.re/go/agent) — AI agent orchestration, dispatch, verify
+- core/mcp (dappco.re/go/mcp) — Model Context Protocol server
+- core-php — Laravel package ecosystem (18 packages)
+
+## Conventions
+
+All code follows RFC-025 Agent Experience (AX) principles:
+- Predictable names over short names
+- Comments as usage examples
+- Path is documentation
+- Templates over freeform
+- Declarative over imperative
+- Core primitives for universal types
+- Tests as behavioural specification (Good/Bad/Ugly)

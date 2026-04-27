@@ -1,0 +1,668 @@
+{
+  "themes": [
+    {
+      "id": 1,
+      "name": "Paris",
+      "settings": {
+        "biolink": {
+          "background_type": "preset",
+          "background": "zero",
+          "font": "default",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#FFFFFFC9",
+          "background_color": "#0000004A",
+          "border_width": "0",
+          "border_radius": "rounded",
+          "border_shadow_blur": "20",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#FFFFFF",
+          "background_color": "#FFFFFF00",
+          "border_radius": "straight"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFFD4",
+          "background_color": "#0000004A",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "Tokyo",
+      "settings": {
+        "biolink": {
+          "background_type": "preset",
+          "background": "ten",
+          "font": "default",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#000000",
+          "title_color": "#000000",
+          "description_color": "#383838",
+          "background_color": "#FFFFFF",
+          "border_width": "0",
+          "border_radius": "round",
+          "border_shadow_style": "subtle",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#131313",
+          "background_color": "#FFFFFF99",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#40455B",
+          "background_color": "#FFFFFF",
+          "border_radius": "round"
+        },
+        "biolink_block_heading": {
+          "text_color": "#000000"
+        },
+        "additional": {
+          "overlay": "leaves.svg"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "Sydney",
+      "settings": {
+        "biolink": {
+          "background_type": "preset",
+          "background": "thirteen",
+          "font": "default",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#ffffff",
+          "title_color": "#ffffff",
+          "description_color": "#ffffff",
+          "background_color": "#21007ABD",
+          "border_width": "0",
+          "border_radius": "straight",
+          "border_shadow_blur": "20",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#FFFFFF",
+          "background_color": "#FFFFFF45",
+          "border_radius": "straight"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFFCF",
+          "background_color": "#21007ABD",
+          "border_radius": "straight"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "London",
+      "settings": {
+        "biolink": {
+          "background_type": "preset",
+          "background": "four",
+          "font": "trebuchet-ms",
+          "font_size": "16",
+          "background_blur": 1,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#F2F2F2",
+          "background_color": "#94008B30",
+          "border_width": "2",
+          "border_color": "#6700601C",
+          "border_radius": "rounded",
+          "border_shadow_offset_x": "3",
+          "border_shadow_offset_y": "3",
+          "border_shadow_blur": "15",
+          "border_shadow_spread": "2",
+          "border_shadow_color": "#88888800"
+        },
+        "biolink_block_socials": {
+          "color": "#FFFFFF",
+          "background_color": "#E95FA1",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFF",
+          "background_color": "#94008B30",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "Antalya",
+      "settings": {
+        "biolink": {
+          "background_type": "preset_abstract",
+          "background": "seven",
+          "font": "montserrat",
+          "font_size": "16",
+          "background_blur": 5,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#00644B",
+          "title_color": "#00644B",
+          "description_color": "#00AC8B",
+          "background_color": "#2CFFD5",
+          "border_width": "0",
+          "border_radius": "rounded",
+          "border_shadow_style": "subtle",
+          "border_shadow_color": "#3DFFB359"
+        },
+        "biolink_block_socials": {
+          "color": "#217361",
+          "background_color": "#89FFE5",
+          "border_radius": "rounded"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFF",
+          "background_color": "#FFFFFF00",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": "Zermatt",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "78564ffadd816470639d7f68149ee338.webp",
+          "font": "karla",
+          "font_size": "16",
+          "background_blur": 2,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#ffffff",
+          "title_color": "#ffffff",
+          "description_color": "#FFF0F0",
+          "background_color": "#02343B",
+          "border_width": "1",
+          "border_color": "#FFFFFF4A",
+          "border_radius": "rounded",
+          "border_shadow_blur": "20",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#FFFFFFBA",
+          "background_color": "#228694A1",
+          "border_radius": "rounded"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFFD9",
+          "background_color": "#02343B",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        },
+        "additional": {
+          "animation": "snowfall"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "Seattle",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "25b10743f5d934e70250ffd557cee0a6.webp",
+          "font": "inconsolata",
+          "font_size": "16",
+          "background_blur": 2,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#ffffff",
+          "title_color": "#ffffff",
+          "description_color": "#ffffff",
+          "background_color": "#000000B5",
+          "border_width": "0",
+          "border_radius": "straight",
+          "border_shadow_blur": "20",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#ffffff",
+          "background_color": "#00000000",
+          "border_radius": "rounded"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#5DC5D5",
+          "background_color": "#000000B5",
+          "border_radius": "straight"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        },
+        "additional": {
+          "overlay": "rain.svg"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "Kyoto",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "0fc5e5a6b52b9d58ffc6ecfb112c76df.webp",
+          "font": "default",
+          "font_size": "16",
+          "background_blur": 3,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#ffffff",
+          "title_color": "#ffffff",
+          "description_color": "#ffffff",
+          "background_color": "#BC5101ED",
+          "border_width": "1",
+          "border_radius": "rounded",
+          "border_shadow_blur": "20",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#FFE8C0",
+          "background_color": "#0000007D",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFF",
+          "background_color": "#BC5101ED",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        },
+        "additional": {
+          "overlay": "autumn_leaves.svg"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "Barcelona",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "b634495133c9091655dab3c3c916722e.svg",
+          "font": "inter",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#ffffff",
+          "title_color": "#ffffff",
+          "description_color": "#D5D5D5",
+          "background_color": "#0C0127D1",
+          "border_width": "0",
+          "border_radius": "rounded",
+          "border_shadow_color": "#FFFFFF00"
+        },
+        "biolink_block_socials": {
+          "color": "#2B006C",
+          "background_color": "#FFFFFF45",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#ffffff",
+          "background_color": "#0C0127D1",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "Reykjavik",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "567753a3181cb7d22b3c4e300e502986.svg",
+          "font": "trebuchet-ms",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#ffffff",
+          "background_color": "#FC5981",
+          "border_width": "0",
+          "border_radius": "round",
+          "border_shadow_style": "subtle",
+          "border_shadow_color": "#00000000"
+        },
+        "biolink_block_socials": {
+          "color": "#ffffff",
+          "background_color": "#AD0000",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#ffffff",
+          "background_color": "#FFFFFF00",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "Azurevale",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "304fd4c6adb47de7396748cd2981d9ea.svg",
+          "font": "verdana",
+          "font_size": "15",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#ffffff",
+          "background_color": "#3294FF",
+          "border_width": "0",
+          "border_radius": "rounded",
+          "border_shadow_style": "subtle",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#E6F2FF",
+          "background_color": "#3372B7",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#FFFFFF",
+          "background_color": "#00000000",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "name": "Hong Kong",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "fd6c5d094781b750b77408b7ec03a90f.svg",
+          "font": "inconsolata",
+          "font_size": "16",
+          "background_blur": 3,
+          "background_brightness": 110,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#E8E8E8",
+          "background_color": "#7284FF",
+          "border_width": "0",
+          "border_radius": "round",
+          "border_shadow_style": "none",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#ECEEFF",
+          "background_color": "#3F4CE0",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#ffffff",
+          "background_color": "#00000000",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "Taipei",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "289e2f60e6eb4d5a8a57394b9aabb8d7.svg",
+          "font": "comic-sans-ms",
+          "font_size": "14",
+          "background_blur": 5,
+          "background_brightness": 115,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#E8E8E8",
+          "background_color": "#4F2A51E6",
+          "border_width": "0",
+          "border_color": "#FFFFFF4F",
+          "border_radius": "round",
+          "border_shadow_style": "none",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#FDE6FF",
+          "background_color": "#79247ED4",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#ffffff",
+          "background_color": "#FFFFFF00",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "Shanghai",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "a74b6b499633319c462fe4c12a8e9c1d.svg",
+          "font": "lato",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#FFFFFF",
+          "title_color": "#FFFFFF",
+          "description_color": "#F3F3F3",
+          "background_color": "#FF25B9",
+          "border_width": "0",
+          "border_color": "#FFFFFF4F",
+          "border_radius": "rounded",
+          "border_shadow_style": "hard",
+          "border_shadow_color": "#72FFDA"
+        },
+        "biolink_block_socials": {
+          "color": "#043677",
+          "background_color": "#65D8FF",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#ffffff",
+          "background_color": "#FFFFFF00",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "name": "Naples",
+      "settings": {
+        "biolink": {
+          "background_type": "image",
+          "background": "2d120dd791037a99206d0dc856f4a0f4.svg",
+          "font": "inter",
+          "font_size": "16",
+          "background_blur": 0,
+          "background_brightness": 100,
+          "width": 8,
+          "block_spacing": 2,
+          "hover_animation": "smooth"
+        },
+        "biolink_block": {
+          "text_color": "#6A5955",
+          "title_color": "#6A5955",
+          "description_color": "#76615C",
+          "background_color": "#FFE1DA",
+          "border_width": "0",
+          "border_color": "#FFFFFF4F",
+          "border_radius": "rounded",
+          "border_shadow_style": "none",
+          "border_shadow_color": "#00000010"
+        },
+        "biolink_block_socials": {
+          "color": "#FFFCFF",
+          "background_color": "#760074",
+          "border_radius": "round"
+        },
+        "biolink_block_paragraph": {
+          "text_color": "#000000C9",
+          "background_color": "#FFFFFF00",
+          "border_radius": "rounded"
+        },
+        "biolink_block_heading": {
+          "text_color": "#000000C9"
+        }
+      }
+    }
+  ],
+  "background_presets": {
+    "zero": "linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%)",
+    "one": "linear-gradient(180deg, #A9C9FF 0%, #FFBBEC 100%)",
+    "two": "linear-gradient(90deg, #00DBDE 0%, #FC00FF 100%)",
+    "three": "linear-gradient(0deg, #08AEEA 0%, #2AF598 100%)",
+    "four": "linear-gradient(0deg, #FF3CAC 0%, #784BA0 50%, #2B86C5 100%)",
+    "five": "linear-gradient(45deg, #FA8BFF 0%, #2BD2FF 52%, #2BFF88 90%)",
+    "six": "linear-gradient(180deg, #FFE53B 0%, #FF2525 74%)",
+    "seven": "linear-gradient(160deg, #0093E9 0%, #80D0C7 100%)",
+    "eight": "linear-gradient(90deg, #FBDA61 0%, #FF5ACD 100%)",
+    "nine": "linear-gradient(45deg, #8BC6EC 0%, #9599E2 100%)",
+    "ten": "linear-gradient(0deg, #FFDEE9 0%, #B5FFFC 100%)",
+    "eleven": "linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%)",
+    "twelve": "linear-gradient(45deg, #85FFBD 0%, #FFFB7D 100%)",
+    "thirteen": "linear-gradient(180deg, #A9C9FF 0%, #6713D2 100%)"
+  },
+  "block_types": {
+    "standard": [
+      "link", "heading", "paragraph", "avatar", "image", "socials",
+      "big_link", "image_grid", "divider", "list", "audio", "video",
+      "iframe", "file", "cta", "modal_text"
+    ],
+    "advanced": [
+      "business_hours", "email_collector", "phone_collector", "contact_collector",
+      "header", "rss_feed", "custom_html", "vcard", "alert", "map",
+      "appointment_calendar", "faq", "countdown", "external_item", "share",
+      "coupon", "youtube_feed", "timeline", "review", "image_slider", "markdown"
+    ],
+    "embeds": [
+      "soundcloud", "spotify", "youtube", "twitch", "vimeo", "tiktok_video",
+      "applemusic", "tidal", "mixcloud", "kick", "twitter_tweet", "twitter_video",
+      "pinterest_profile", "instagram_media", "snapchat", "tiktok_profile", "vk_video",
+      "typeform", "calendly", "discord", "facebook", "reddit",
+      "pdf_document", "powerpoint_presentation", "excel_spreadsheet", "rumble", "telegram"
+    ],
+    "payments": [
+      "paypal", "donation", "product", "service"
+    ]
+  },
+  "fonts": [
+    "default", "inter", "lato", "montserrat", "karla", "inconsolata",
+    "trebuchet-ms", "verdana", "comic-sans-ms"
+  ],
+  "border_radius_options": ["straight", "rounded", "round"],
+  "border_shadow_styles": ["none", "subtle", "hard"]
+}
