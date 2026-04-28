@@ -2,15 +2,12 @@
 package help
 
 import (
+	. "dappco.re/go"
 	"fmt"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestGenerateID_Good(t *testing.T) {
+func TestGenerateID_Good(t *T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -64,14 +61,14 @@ func TestGenerateID_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			result := GenerateID(tt.input)
-			assert.Equal(t, tt.expected, result)
+			AssertEqual(t, tt.expected, result)
 		})
 	}
 }
 
-func TestExtractFrontmatter_Good(t *testing.T) {
+func TestExtractFrontmatter_Good(t *T) {
 	content := `---
 title: Getting Started
 tags: [intro, setup]
@@ -88,16 +85,16 @@ This is the content.
 
 	fm, body := ExtractFrontmatter(content)
 
-	assert.NotNil(t, fm)
-	assert.Equal(t, "Getting Started", fm.Title)
-	assert.Equal(t, []string{"intro", "setup"}, fm.Tags)
-	assert.Equal(t, 1, fm.Order)
-	assert.Equal(t, []string{"installation", "configuration"}, fm.Related)
-	assert.Contains(t, body, "# Welcome")
-	assert.Contains(t, body, "This is the content.")
+	AssertNotNil(t, fm)
+	AssertEqual(t, "Getting Started", fm.Title)
+	AssertEqual(t, []string{"intro", "setup"}, fm.Tags)
+	AssertEqual(t, 1, fm.Order)
+	AssertEqual(t, []string{"installation", "configuration"}, fm.Related)
+	AssertContains(t, body, "# Welcome")
+	AssertContains(t, body, "This is the content.")
 }
 
-func TestExtractFrontmatter_Good_NoFrontmatter(t *testing.T) {
+func TestExtractFrontmatter_Good_NoFrontmatter(t *T) {
 	content := `# Just a Heading
 
 Some content here.
@@ -105,34 +102,34 @@ Some content here.
 
 	fm, body := ExtractFrontmatter(content)
 
-	assert.Nil(t, fm)
-	assert.Equal(t, content, body)
+	AssertNil(t, fm)
+	AssertEqual(t, content, body)
 }
 
-func TestExtractFrontmatter_Good_CRLF(t *testing.T) {
+func TestExtractFrontmatter_Good_CRLF(t *T) {
 	// Content with CRLF line endings (Windows-style)
 	content := "---\r\ntitle: CRLF Test\r\n---\r\n\r\n# Content"
 
 	fm, body := ExtractFrontmatter(content)
 
-	assert.NotNil(t, fm)
-	assert.Equal(t, "CRLF Test", fm.Title)
-	assert.Contains(t, body, "# Content")
+	AssertNotNil(t, fm)
+	AssertEqual(t, "CRLF Test", fm.Title)
+	AssertContains(t, body, "# Content")
 }
 
-func TestExtractFrontmatter_Good_Empty(t *testing.T) {
+func TestExtractFrontmatter_Good_Empty(t *T) {
 	// Empty frontmatter block
 	content := "---\n---\n# Content"
 
 	fm, body := ExtractFrontmatter(content)
 
 	// Empty frontmatter should parse successfully
-	assert.NotNil(t, fm)
-	assert.Equal(t, "", fm.Title)
-	assert.Contains(t, body, "# Content")
+	AssertNotNil(t, fm)
+	AssertEqual(t, "", fm.Title)
+	AssertContains(t, body, "# Content")
 }
 
-func TestExtractFrontmatter_Bad_InvalidYAML(t *testing.T) {
+func TestExtractFrontmatter_Bad_InvalidYAML(t *T) {
 	content := `---
 title: [invalid yaml
 ---
@@ -143,11 +140,11 @@ title: [invalid yaml
 	fm, body := ExtractFrontmatter(content)
 
 	// Invalid YAML should return nil frontmatter and original content
-	assert.Nil(t, fm)
-	assert.Equal(t, content, body)
+	AssertNil(t, fm)
+	AssertEqual(t, content, body)
 }
 
-func TestExtractSections_Good(t *testing.T) {
+func TestExtractSections_Good(t *T) {
 	content := `# Main Title
 
 Introduction paragraph.
@@ -168,35 +165,35 @@ Config info here.
 
 	sections := ExtractSections(content)
 
-	assert.Len(t, sections, 4)
+	AssertLen(t, sections, 4)
 
 	// Main Title (H1)
-	assert.Equal(t, "main-title", sections[0].ID)
-	assert.Equal(t, "Main Title", sections[0].Title)
-	assert.Equal(t, 1, sections[0].Level)
-	assert.Equal(t, 1, sections[0].Line)
-	assert.Contains(t, sections[0].Content, "Introduction paragraph.")
+	AssertEqual(t, "main-title", sections[0].ID)
+	AssertEqual(t, "Main Title", sections[0].Title)
+	AssertEqual(t, 1, sections[0].Level)
+	AssertEqual(t, 1, sections[0].Line)
+	AssertContains(t, sections[0].Content, "Introduction paragraph.")
 
 	// Installation (H2)
-	assert.Equal(t, "installation", sections[1].ID)
-	assert.Equal(t, "Installation", sections[1].Title)
-	assert.Equal(t, 2, sections[1].Level)
-	assert.Contains(t, sections[1].Content, "Install instructions here.")
-	assert.Contains(t, sections[1].Content, "More details.")
+	AssertEqual(t, "installation", sections[1].ID)
+	AssertEqual(t, "Installation", sections[1].Title)
+	AssertEqual(t, 2, sections[1].Level)
+	AssertContains(t, sections[1].Content, "Install instructions here.")
+	AssertContains(t, sections[1].Content, "More details.")
 
 	// Prerequisites (H3)
-	assert.Equal(t, "prerequisites", sections[2].ID)
-	assert.Equal(t, "Prerequisites", sections[2].Title)
-	assert.Equal(t, 3, sections[2].Level)
-	assert.Contains(t, sections[2].Content, "You need these things.")
+	AssertEqual(t, "prerequisites", sections[2].ID)
+	AssertEqual(t, "Prerequisites", sections[2].Title)
+	AssertEqual(t, 3, sections[2].Level)
+	AssertContains(t, sections[2].Content, "You need these things.")
 
 	// Configuration (H2)
-	assert.Equal(t, "configuration", sections[3].ID)
-	assert.Equal(t, "Configuration", sections[3].Title)
-	assert.Equal(t, 2, sections[3].Level)
+	AssertEqual(t, "configuration", sections[3].ID)
+	AssertEqual(t, "Configuration", sections[3].Title)
+	AssertEqual(t, 2, sections[3].Level)
 }
 
-func TestExtractSections_Good_AllHeadingLevels(t *testing.T) {
+func TestExtractSections_Good_AllHeadingLevels(t *T) {
 	content := `# H1
 ## H2
 ### H3
@@ -207,23 +204,23 @@ func TestExtractSections_Good_AllHeadingLevels(t *testing.T) {
 
 	sections := ExtractSections(content)
 
-	assert.Len(t, sections, 6)
+	AssertLen(t, sections, 6)
 	for i, level := range []int{1, 2, 3, 4, 5, 6} {
-		assert.Equal(t, level, sections[i].Level)
+		AssertEqual(t, level, sections[i].Level)
 	}
 }
 
-func TestExtractSections_Good_Empty(t *testing.T) {
+func TestExtractSections_Good_Empty(t *T) {
 	content := `Just plain text.
 No headings here.
 `
 
 	sections := ExtractSections(content)
 
-	assert.Empty(t, sections)
+	AssertEmpty(t, sections)
 }
 
-func TestParseTopic_Good(t *testing.T) {
+func TestParseTopic_Good(t *T) {
 	content := []byte(`---
 title: Quick Start Guide
 tags: [intro, quickstart]
@@ -247,29 +244,29 @@ Then do this.
 
 	topic, err := ParseTopic("docs/quick-start.md", content)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, topic)
+	AssertNoError(t, err)
+	AssertNotNil(t, topic)
 
 	// Check metadata from frontmatter
-	assert.Equal(t, "quick-start-guide", topic.ID)
-	assert.Equal(t, "Quick Start Guide", topic.Title)
-	assert.Equal(t, "docs/quick-start.md", topic.Path)
-	assert.Equal(t, []string{"intro", "quickstart"}, topic.Tags)
-	assert.Equal(t, []string{"installation"}, topic.Related)
-	assert.Equal(t, 5, topic.Order)
+	AssertEqual(t, "quick-start-guide", topic.ID)
+	AssertEqual(t, "Quick Start Guide", topic.Title)
+	AssertEqual(t, "docs/quick-start.md", topic.Path)
+	AssertEqual(t, []string{"intro", "quickstart"}, topic.Tags)
+	AssertEqual(t, []string{"installation"}, topic.Related)
+	AssertEqual(t, 5, topic.Order)
 
 	// Check sections
-	assert.Len(t, topic.Sections, 3)
-	assert.Equal(t, "quick-start-guide", topic.Sections[0].ID)
-	assert.Equal(t, "first-steps", topic.Sections[1].ID)
-	assert.Equal(t, "next-steps", topic.Sections[2].ID)
+	AssertLen(t, topic.Sections, 3)
+	AssertEqual(t, "quick-start-guide", topic.Sections[0].ID)
+	AssertEqual(t, "first-steps", topic.Sections[1].ID)
+	AssertEqual(t, "next-steps", topic.Sections[2].ID)
 
 	// Content should not include frontmatter
-	assert.NotContains(t, topic.Content, "---")
-	assert.Contains(t, topic.Content, "# Quick Start Guide")
+	AssertNotContains(t, topic.Content, "---")
+	AssertContains(t, topic.Content, "# Quick Start Guide")
 }
 
-func TestParseTopic_Good_NoFrontmatter(t *testing.T) {
+func TestParseTopic_Good_NoFrontmatter(t *T) {
 	content := []byte(`# Getting Started
 
 This is a simple doc.
@@ -281,18 +278,18 @@ Install it here.
 
 	topic, err := ParseTopic("getting-started.md", content)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, topic)
+	AssertNoError(t, err)
+	AssertNotNil(t, topic)
 
 	// Title should come from first H1
-	assert.Equal(t, "Getting Started", topic.Title)
-	assert.Equal(t, "getting-started", topic.ID)
+	AssertEqual(t, "Getting Started", topic.Title)
+	AssertEqual(t, "getting-started", topic.ID)
 
 	// Sections extracted
-	assert.Len(t, topic.Sections, 2)
+	AssertLen(t, topic.Sections, 2)
 }
 
-func TestParseTopic_Good_NoHeadings(t *testing.T) {
+func TestParseTopic_Good_NoHeadings(t *T) {
 	content := []byte(`---
 title: Plain Content
 ---
@@ -302,27 +299,27 @@ Just some text without any headings.
 
 	topic, err := ParseTopic("plain.md", content)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, topic)
-	assert.Equal(t, "Plain Content", topic.Title)
-	assert.Equal(t, "plain-content", topic.ID)
-	assert.Empty(t, topic.Sections)
+	AssertNoError(t, err)
+	AssertNotNil(t, topic)
+	AssertEqual(t, "Plain Content", topic.Title)
+	AssertEqual(t, "plain-content", topic.ID)
+	AssertEmpty(t, topic.Sections)
 }
 
-func TestParseTopic_Good_IDFromPath(t *testing.T) {
+func TestParseTopic_Good_IDFromPath(t *T) {
 	content := []byte(`Just content, no frontmatter or headings.`)
 
 	topic, err := ParseTopic("commands/dev-workflow.md", content)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, topic)
+	AssertNoError(t, err)
+	AssertNotNil(t, topic)
 
 	// ID and title should be derived from path
-	assert.Equal(t, "dev-workflow", topic.ID)
-	assert.Equal(t, "", topic.Title) // No title available
+	AssertEqual(t, "dev-workflow", topic.ID)
+	AssertEqual(t, "", topic.Title) // No title available
 }
 
-func TestPathToTitle_Good(t *testing.T) {
+func TestPathToTitle_Good(t *T) {
 	tests := []struct {
 		path     string
 		expected string
@@ -335,30 +332,30 @@ func TestPathToTitle_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.path, func(t *testing.T) {
+		t.Run(tt.path, func(t *T) {
 			result := pathToTitle(tt.path)
-			assert.Equal(t, tt.expected, result)
+			AssertEqual(t, tt.expected, result)
 		})
 	}
 }
 
 // --- Phase 0: Expanded parser tests ---
 
-func TestParseTopic_Good_EmptyInput(t *testing.T) {
+func TestParseTopic_Good_EmptyInput(t *T) {
 	// Empty byte slice should produce a valid topic with no content
 	topic, err := ParseTopic("empty.md", []byte(""))
 
-	require.NoError(t, err)
-	assert.NotNil(t, topic)
-	assert.Equal(t, "empty", topic.ID)
-	assert.Equal(t, "", topic.Title)
-	assert.Equal(t, "", topic.Content)
-	assert.Empty(t, topic.Sections)
-	assert.Empty(t, topic.Tags)
-	assert.Empty(t, topic.Related)
+	RequireNoError(t, err)
+	AssertNotNil(t, topic)
+	AssertEqual(t, "empty", topic.ID)
+	AssertEqual(t, "", topic.Title)
+	AssertEqual(t, "", topic.Content)
+	AssertEmpty(t, topic.Sections)
+	AssertEmpty(t, topic.Tags)
+	AssertEmpty(t, topic.Related)
 }
 
-func TestParseTopic_Good_FrontmatterOnly(t *testing.T) {
+func TestParseTopic_Good_FrontmatterOnly(t *T) {
 	// Frontmatter with no body or sections
 	content := []byte(`---
 title: Metadata Only
@@ -369,17 +366,17 @@ order: 99
 
 	topic, err := ParseTopic("meta.md", content)
 
-	require.NoError(t, err)
-	assert.Equal(t, "metadata-only", topic.ID)
-	assert.Equal(t, "Metadata Only", topic.Title)
-	assert.Equal(t, []string{"meta"}, topic.Tags)
-	assert.Equal(t, 99, topic.Order)
-	assert.Empty(t, topic.Sections)
+	RequireNoError(t, err)
+	AssertEqual(t, "metadata-only", topic.ID)
+	AssertEqual(t, "Metadata Only", topic.Title)
+	AssertEqual(t, []string{"meta"}, topic.Tags)
+	AssertEqual(t, 99, topic.Order)
+	AssertEmpty(t, topic.Sections)
 	// Body after frontmatter is just a newline
-	assert.Equal(t, "", strings.TrimSpace(topic.Content))
+	AssertEqual(t, "", strings.TrimSpace(topic.Content))
 }
 
-func TestExtractFrontmatter_Bad_MalformedYAML(t *testing.T) {
+func TestExtractFrontmatter_Bad_MalformedYAML(t *T) {
 	tests := []struct {
 		name    string
 		content string
@@ -412,19 +409,19 @@ title:
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			fm, body := ExtractFrontmatter(tt.content)
 			// Malformed YAML should return nil frontmatter without panic
 			if fm == nil {
 				// Body should be original content when YAML fails
-				assert.Equal(t, tt.content, body)
+				AssertEqual(t, tt.content, body)
 			}
 			// No panic is the key assertion — test reaching here is success
 		})
 	}
 }
 
-func TestExtractFrontmatter_Bad_NotAtStart(t *testing.T) {
+func TestExtractFrontmatter_Bad_NotAtStart(t *T) {
 	// Frontmatter delimiters that do not start at the beginning of the file
 	content := `Some preamble text.
 
@@ -436,11 +433,11 @@ title: Should Not Parse
 
 	fm, body := ExtractFrontmatter(content)
 
-	assert.Nil(t, fm)
-	assert.Equal(t, content, body)
+	AssertNil(t, fm)
+	AssertEqual(t, content, body)
 }
 
-func TestExtractSections_Good_DeeplyNested(t *testing.T) {
+func TestExtractSections_Good_DeeplyNested(t *T) {
 	content := `# Level 1
 
 Top-level content.
@@ -468,7 +465,7 @@ Deepest heading level.
 
 	sections := ExtractSections(content)
 
-	require.Len(t, sections, 6)
+	AssertLen(t, sections, 6)
 
 	for i, expected := range []struct {
 		level int
@@ -481,17 +478,17 @@ Deepest heading level.
 		{5, "Level 5"},
 		{6, "Level 6"},
 	} {
-		assert.Equal(t, expected.level, sections[i].Level, "section %d level", i)
-		assert.Equal(t, expected.title, sections[i].Title, "section %d title", i)
+		AssertEqual(t, expected.level, sections[i].Level, fmt.Sprintf("section %d level", i))
+		AssertEqual(t, expected.title, sections[i].Title, fmt.Sprintf("section %d title", i))
 	}
 
 	// Verify content is associated with correct sections
-	assert.Contains(t, sections[0].Content, "Top-level content.")
-	assert.Contains(t, sections[3].Content, "Fourth level details.")
-	assert.Contains(t, sections[5].Content, "Deepest heading level.")
+	AssertContains(t, sections[0].Content, "Top-level content.")
+	AssertContains(t, sections[3].Content, "Fourth level details.")
+	AssertContains(t, sections[5].Content, "Deepest heading level.")
 }
 
-func TestExtractSections_Good_DeeplyNestedWithContent(t *testing.T) {
+func TestExtractSections_Good_DeeplyNestedWithContent(t *T) {
 	// H4, H5, H6 with meaningful content under each
 	content := `#### Configuration Options
 
@@ -508,21 +505,21 @@ These may change without notice.
 
 	sections := ExtractSections(content)
 
-	require.Len(t, sections, 3)
-	assert.Equal(t, 4, sections[0].Level)
-	assert.Equal(t, "Configuration Options", sections[0].Title)
-	assert.Contains(t, sections[0].Content, "Set these in your config file.")
+	AssertLen(t, sections, 3)
+	AssertEqual(t, 4, sections[0].Level)
+	AssertEqual(t, "Configuration Options", sections[0].Title)
+	AssertContains(t, sections[0].Content, "Set these in your config file.")
 
-	assert.Equal(t, 5, sections[1].Level)
-	assert.Equal(t, "Advanced Options", sections[1].Title)
-	assert.Contains(t, sections[1].Content, "Only for power users.")
+	AssertEqual(t, 5, sections[1].Level)
+	AssertEqual(t, "Advanced Options", sections[1].Title)
+	AssertContains(t, sections[1].Content, "Only for power users.")
 
-	assert.Equal(t, 6, sections[2].Level)
-	assert.Equal(t, "Experimental Flags", sections[2].Title)
-	assert.Contains(t, sections[2].Content, "These may change without notice.")
+	AssertEqual(t, 6, sections[2].Level)
+	AssertEqual(t, "Experimental Flags", sections[2].Title)
+	AssertContains(t, sections[2].Content, "These may change without notice.")
 }
 
-func TestParseTopic_Good_Unicode(t *testing.T) {
+func TestParseTopic_Good_Unicode(t *T) {
 	tests := []struct {
 		name    string
 		content string
@@ -595,18 +592,18 @@ Content with Кириллица, 中文, العربية, and हिन्दी.
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			topic, err := ParseTopic("unicode.md", []byte(tt.content))
 
-			require.NoError(t, err)
-			assert.Equal(t, tt.title, topic.Title)
-			assert.NotEmpty(t, topic.ID)
-			assert.True(t, len(topic.Sections) > 0, "should extract sections from unicode content")
+			RequireNoError(t, err)
+			AssertEqual(t, tt.title, topic.Title)
+			AssertNotEmpty(t, topic.ID)
+			AssertTrue(t, len(topic.Sections) > 0, "should extract sections from unicode content")
 		})
 	}
 }
 
-func TestParseTopic_Good_VeryLongDocument(t *testing.T) {
+func TestParseTopic_Good_VeryLongDocument(t *T) {
 	// Build a document with 10,000+ lines
 	var b strings.Builder
 
@@ -623,30 +620,32 @@ func TestParseTopic_Good_VeryLongDocument(t *testing.T) {
 
 	content := b.String()
 	lineCount := strings.Count(content, "\n")
-	assert.Greater(t, lineCount, 10000, "document should exceed 10K lines")
+	AssertGreater(t, lineCount, 10000, "document should exceed 10K lines")
 
 	topic, err := ParseTopic("massive.md", []byte(content))
 
-	require.NoError(t, err)
-	assert.Equal(t, "Massive Document", topic.Title)
-	assert.Equal(t, "massive-document", topic.ID)
-	assert.Len(t, topic.Sections, 100)
+	RequireNoError(t, err)
+	AssertEqual(t, "Massive Document", topic.Title)
+	AssertEqual(t, "massive-document", topic.ID)
+	AssertLen(t, topic.Sections, 100)
 
 	// Verify first and last sections have correct titles
-	assert.Equal(t, "Section 1", topic.Sections[0].Title)
-	assert.Equal(t, "Section 100", topic.Sections[99].Title)
+	AssertEqual(t, "Section 1", topic.Sections[0].Title)
+	AssertEqual(t, "Section 100", topic.Sections[99].Title)
 
 	// Verify content is captured in sections
-	assert.Contains(t, topic.Sections[0].Content, "Line 1 of section 1")
-	assert.Contains(t, topic.Sections[99].Content, "Line 100 of section 100")
+	AssertContains(t, topic.Sections[0].Content, "Line 1 of section 1")
+	AssertContains(t, topic.Sections[99].Content, "Line 100 of section 100")
 }
 
-func TestExtractSections_Bad_EmptyString(t *testing.T) {
+func TestExtractSections_Bad_EmptyString(t *T) {
 	sections := ExtractSections("")
-	assert.Empty(t, sections)
+	AssertEmpty(t, sections)
+	AssertLen(t, sections, 0)
+	AssertFalse(t, len(sections) > 0)
 }
 
-func TestExtractSections_Bad_HeadingWithoutSpace(t *testing.T) {
+func TestExtractSections_Bad_HeadingWithoutSpace(t *T) {
 	// "#NoSpace" is not a valid markdown heading (needs space after #)
 	content := `#NoSpace
 ##AlsoNoSpace
@@ -654,10 +653,10 @@ Some text.
 `
 
 	sections := ExtractSections(content)
-	assert.Empty(t, sections, "headings without space after # should not be parsed")
+	AssertEmpty(t, sections, "headings without space after # should not be parsed")
 }
 
-func TestExtractSections_Good_ConsecutiveHeadings(t *testing.T) {
+func TestExtractSections_Good_ConsecutiveHeadings(t *T) {
 	// Headings with no content between them
 	content := `# Title
 ## Subtitle
@@ -666,31 +665,37 @@ func TestExtractSections_Good_ConsecutiveHeadings(t *testing.T) {
 
 	sections := ExtractSections(content)
 
-	require.Len(t, sections, 3)
+	AssertLen(t, sections, 3)
 	// First two sections should have empty content
-	assert.Equal(t, "", sections[0].Content)
-	assert.Equal(t, "", sections[1].Content)
-	assert.Equal(t, "", sections[2].Content)
+	AssertEqual(t, "", sections[0].Content)
+	AssertEqual(t, "", sections[1].Content)
+	AssertEqual(t, "", sections[2].Content)
 }
 
-func TestGenerateID_Ugly_EmptyString(t *testing.T) {
+func TestGenerateID_Ugly_EmptyString(t *T) {
 	result := GenerateID("")
-	assert.Equal(t, "", result)
+	AssertEqual(t, "", result)
+	AssertEmpty(t, result)
+	AssertNotContains(t, result, "-")
 }
 
-func TestGenerateID_Good_OnlySpecialChars(t *testing.T) {
+func TestGenerateID_Good_OnlySpecialChars(t *T) {
 	result := GenerateID("!@#$%^&*()")
-	assert.Equal(t, "", result)
+	AssertEqual(t, "", result)
+	AssertEmpty(t, result)
+	AssertNotContains(t, result, "!")
 }
 
-func TestGenerateID_Good_CJK(t *testing.T) {
+func TestGenerateID_Good_CJK(t *T) {
 	result := GenerateID("日本語テスト")
-	assert.NotEmpty(t, result)
-	assert.NotContains(t, result, " ")
+	AssertNotEmpty(t, result)
+	AssertNotContains(t, result, " ")
 }
 
-func TestGenerateID_Good_Emoji(t *testing.T) {
+func TestGenerateID_Good_Emoji(t *T) {
 	result := GenerateID("Hello 🌍 World")
 	// Emoji are not letters or digits, so they are dropped
-	assert.Equal(t, "hello-world", result)
+	AssertEqual(t, "hello-world", result)
+	AssertNotContains(t, result, "🌍")
+	AssertNotContains(t, result, " ")
 }

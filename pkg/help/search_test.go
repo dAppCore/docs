@@ -2,16 +2,13 @@
 package help
 
 import (
+	. "dappco.re/go"
 	"regexp"
 	"strings"
-	"testing"
 	"unicode/utf8"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestTokenize_Good(t *testing.T) {
+func TestTokenize_Good(t *T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -55,14 +52,14 @@ func TestTokenize_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			result := tokenize(tt.input)
-			assert.Equal(t, tt.expected, result)
+			AssertEqual(t, tt.expected, result)
 		})
 	}
 }
 
-func TestSearchIndex_Add_Good(t *testing.T) {
+func TestSearchIndex_Add_Good(t *T) {
 	idx := newSearchIndex()
 
 	topic := &Topic{
@@ -78,20 +75,20 @@ func TestSearchIndex_Add_Good(t *testing.T) {
 	idx.Add(topic)
 
 	// Verify topic is stored
-	assert.NotNil(t, idx.topics["getting-started"])
+	AssertNotNil(t, idx.topics["getting-started"])
 
 	// Verify words are indexed
-	assert.Contains(t, idx.index["getting"], "getting-started")
-	assert.Contains(t, idx.index["started"], "getting-started")
-	assert.Contains(t, idx.index["welcome"], "getting-started")
-	assert.Contains(t, idx.index["guide"], "getting-started")
-	assert.Contains(t, idx.index["intro"], "getting-started")
-	assert.Contains(t, idx.index["setup"], "getting-started")
-	assert.Contains(t, idx.index["installation"], "getting-started")
-	assert.Contains(t, idx.index["cli"], "getting-started")
+	AssertContains(t, idx.index["getting"], "getting-started")
+	AssertContains(t, idx.index["started"], "getting-started")
+	AssertContains(t, idx.index["welcome"], "getting-started")
+	AssertContains(t, idx.index["guide"], "getting-started")
+	AssertContains(t, idx.index["intro"], "getting-started")
+	AssertContains(t, idx.index["setup"], "getting-started")
+	AssertContains(t, idx.index["installation"], "getting-started")
+	AssertContains(t, idx.index["cli"], "getting-started")
 }
 
-func TestSearchIndex_Search_Good(t *testing.T) {
+func TestSearchIndex_Search_Good(t *T) {
 	idx := newSearchIndex()
 
 	// Add test topics
@@ -114,29 +111,29 @@ func TestSearchIndex_Search_Good(t *testing.T) {
 		Content: "List of all available commands.",
 	})
 
-	t.Run("single word query", func(t *testing.T) {
+	t.Run("single word query", func(t *T) {
 		results := idx.Search("configuration")
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "configuration", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "configuration", results[0].Topic.ID)
 	})
 
-	t.Run("multi-word query", func(t *testing.T) {
+	t.Run("multi-word query", func(t *T) {
 		results := idx.Search("cli guide")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 		// Should match getting-started (has both "cli" and "guide")
-		assert.Equal(t, "getting-started", results[0].Topic.ID)
+		AssertEqual(t, "getting-started", results[0].Topic.ID)
 	})
 
-	t.Run("title boost", func(t *testing.T) {
+	t.Run("title boost", func(t *T) {
 		results := idx.Search("commands")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 		// "commands" appears in title of commands topic
-		assert.Equal(t, "commands", results[0].Topic.ID)
+		AssertEqual(t, "commands", results[0].Topic.ID)
 	})
 
-	t.Run("partial word matching", func(t *testing.T) {
+	t.Run("partial word matching", func(t *T) {
 		results := idx.Search("config")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 		// Should match "configuration" and "configure"
 		foundConfig := false
 		for _, r := range results {
@@ -145,21 +142,21 @@ func TestSearchIndex_Search_Good(t *testing.T) {
 				break
 			}
 		}
-		assert.True(t, foundConfig, "Should find configuration topic with prefix match")
+		AssertTrue(t, foundConfig, "Should find configuration topic with prefix match")
 	})
 
-	t.Run("no results", func(t *testing.T) {
+	t.Run("no results", func(t *T) {
 		results := idx.Search("nonexistent")
-		assert.Empty(t, results)
+		AssertEmpty(t, results)
 	})
 
-	t.Run("empty query", func(t *testing.T) {
+	t.Run("empty query", func(t *T) {
 		results := idx.Search("")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 }
 
-func TestSearchIndex_Search_Good_WithSections(t *testing.T) {
+func TestSearchIndex_Search_Good_WithSections(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -185,24 +182,24 @@ func TestSearchIndex_Search_Good_WithSections(t *testing.T) {
 		},
 	})
 
-	t.Run("matches section content", func(t *testing.T) {
+	t.Run("matches section content", func(t *T) {
 		results := idx.Search("debian")
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "installation", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "installation", results[0].Topic.ID)
 		// Should identify the Linux section as best match
 		if results[0].Section != nil {
-			assert.Equal(t, "linux", results[0].Section.ID)
+			AssertEqual(t, "linux", results[0].Section.ID)
 		}
 	})
 
-	t.Run("matches section title", func(t *testing.T) {
+	t.Run("matches section title", func(t *T) {
 		results := idx.Search("windows")
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "installation", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "installation", results[0].Topic.ID)
 	})
 }
 
-func TestExtractSnippet_Good(t *testing.T) {
+func TestExtractSnippet_Good(t *T) {
 	content := `This is the first paragraph with some introduction text.
 
 Here is more content that talks about installation and setup.
@@ -210,69 +207,69 @@ The installation process is straightforward.
 
 Finally, some closing remarks about the configuration.`
 
-	t.Run("finds match and extracts context", func(t *testing.T) {
+	t.Run("finds match and extracts context", func(t *T) {
 		snippet := extractSnippet(content, compileRegexes([]string{"installation"}))
-		assert.Contains(t, snippet, "**installation**")
-		assert.True(t, len(snippet) <= 250, "Snippet should be reasonably short")
+		AssertContains(t, snippet, "**installation**")
+		AssertTrue(t, len(snippet) <= 250, "Snippet should be reasonably short")
 	})
 
-	t.Run("no query words returns start", func(t *testing.T) {
+	t.Run("no query words returns start", func(t *T) {
 		snippet := extractSnippet(content, nil)
-		assert.Contains(t, snippet, "first paragraph")
+		AssertContains(t, snippet, "first paragraph")
 	})
 
-	t.Run("empty content", func(t *testing.T) {
+	t.Run("empty content", func(t *T) {
 		snippet := extractSnippet("", compileRegexes([]string{"test"}))
-		assert.Empty(t, snippet)
+		AssertEmpty(t, snippet)
 	})
 }
 
-func TestExtractSnippet_Highlighting(t *testing.T) {
+func TestExtractSnippet_Highlighting(t *T) {
 	content := "The quick brown fox jumps over the lazy dog."
 
-	t.Run("simple highlighting", func(t *testing.T) {
+	t.Run("simple highlighting", func(t *T) {
 		snippet := extractSnippet(content, compileRegexes([]string{"quick", "fox"}))
-		assert.Contains(t, snippet, "**quick**")
-		assert.Contains(t, snippet, "**fox**")
+		AssertContains(t, snippet, "**quick**")
+		AssertContains(t, snippet, "**fox**")
 	})
 
-	t.Run("case insensitive highlighting", func(t *testing.T) {
+	t.Run("case insensitive highlighting", func(t *T) {
 		snippet := extractSnippet(content, compileRegexes([]string{"QUICK", "Fox"}))
-		assert.Contains(t, snippet, "**quick**")
-		assert.Contains(t, snippet, "**fox**")
+		AssertContains(t, snippet, "**quick**")
+		AssertContains(t, snippet, "**fox**")
 	})
 
-	t.Run("partial word matching", func(t *testing.T) {
+	t.Run("partial word matching", func(t *T) {
 		content := "The configuration is complete."
 		snippet := extractSnippet(content, compileRegexes([]string{"config"}))
-		assert.Contains(t, snippet, "**config**uration")
+		AssertContains(t, snippet, "**config**uration")
 	})
 
-	t.Run("overlapping matches", func(t *testing.T) {
+	t.Run("overlapping matches", func(t *T) {
 		content := "Searching for something."
 		// Both "search" and "searching" match
 		snippet := extractSnippet(content, compileRegexes([]string{"search", "searching"}))
-		assert.Equal(t, "**Searching** for something.", snippet)
+		AssertEqual(t, "**Searching** for something.", snippet)
 	})
 }
 
-func TestExtractSnippet_Good_UTF8(t *testing.T) {
+func TestExtractSnippet_Good_UTF8(t *T) {
 	// Content with multi-byte UTF-8 characters
 	content := "日本語のテキストです。This contains Japanese text. 検索機能をテストします。"
 
-	t.Run("handles multi-byte characters without corruption", func(t *testing.T) {
+	t.Run("handles multi-byte characters without corruption", func(t *T) {
 		snippet := extractSnippet(content, compileRegexes([]string{"japanese"}))
 		// Should not panic or produce invalid UTF-8
-		assert.True(t, len(snippet) > 0)
+		AssertTrue(t, len(snippet) > 0)
 		// Verify the result is valid UTF-8
-		assert.True(t, isValidUTF8(snippet), "Snippet should be valid UTF-8")
+		AssertTrue(t, isValidUTF8(snippet), "Snippet should be valid UTF-8")
 	})
 
-	t.Run("truncates multi-byte content safely", func(t *testing.T) {
+	t.Run("truncates multi-byte content safely", func(t *T) {
 		// Long content that will be truncated
 		longContent := strings.Repeat("日本語", 100) // 300 characters
 		snippet := extractSnippet(longContent, nil)
-		assert.True(t, isValidUTF8(snippet), "Truncated snippet should be valid UTF-8")
+		AssertTrue(t, isValidUTF8(snippet), "Truncated snippet should be valid UTF-8")
 	})
 }
 
@@ -299,7 +296,7 @@ func isValidUTF8(s string) bool {
 	return true
 }
 
-func TestCountMatches_Good(t *testing.T) {
+func TestCountMatches_Good(t *T) {
 	tests := []struct {
 		text     string
 		words    []string
@@ -313,11 +310,11 @@ func TestCountMatches_Good(t *testing.T) {
 
 	for _, tt := range tests {
 		result := countMatches(tt.text, tt.words)
-		assert.Equal(t, tt.expected, result)
+		AssertEqual(t, tt.expected, result)
 	}
 }
 
-func TestSearchResult_Score_Good(t *testing.T) {
+func TestSearchResult_Score_Good(t *T) {
 	idx := newSearchIndex()
 
 	// Topic with query word in title should score higher
@@ -334,44 +331,44 @@ func TestSearchResult_Score_Good(t *testing.T) {
 	})
 
 	results := idx.Search("installation")
-	assert.Len(t, results, 2)
+	AssertLen(t, results, 2)
 
 	// Title match should score higher
-	assert.Equal(t, "topic-in-title", results[0].Topic.ID)
-	assert.Greater(t, results[0].Score, results[1].Score)
+	AssertEqual(t, "topic-in-title", results[0].Topic.ID)
+	AssertGreater(t, results[0].Score, results[1].Score)
 }
 
 // --- Upstream Phase 0 tests (100% coverage) ---
 
-func TestExtractSnippet_Good_HeadingsOnly(t *testing.T) {
+func TestExtractSnippet_Good_HeadingsOnly(t *T) {
 	// Content with only headings and no body text should return empty snippet
 	// when no regexes are provided. Covers the empty-return branch.
 	content := "# Heading One\n## Heading Two\n### Heading Three"
 
 	snippet := extractSnippet(content, nil)
-	assert.Empty(t, snippet, "headings-only content without regexes should return empty snippet")
+	AssertEmpty(t, snippet, "headings-only content without regexes should return empty snippet")
 }
 
-func TestExtractSnippet_Good_SnippetTrimmedToEmpty(t *testing.T) {
+func TestExtractSnippet_Good_SnippetTrimmedToEmpty(t *T) {
 	// After word-boundary trimming the snippet could become empty.
 	// This exercises the snippet=="" guard after TrimSpace.
 	content := strings.Repeat(" ", 200)
 
 	snippet := extractSnippet(content, compileRegexes([]string{"zz"}))
-	assert.Empty(t, snippet, "whitespace-only content should yield empty snippet")
+	AssertEmpty(t, snippet, "whitespace-only content should yield empty snippet")
 }
 
-func TestHighlight_Good_EmptyRegexes(t *testing.T) {
+func TestHighlight_Good_EmptyRegexes(t *T) {
 	// Calling highlight with an empty regex slice should return the
 	// text unchanged. Covers the early-return branch.
 	result := highlight("some text here", nil)
-	assert.Equal(t, "some text here", result)
+	AssertEqual(t, "some text here", result)
 
 	result = highlight("some text here", []*regexp.Regexp{})
-	assert.Equal(t, "some text here", result)
+	AssertEqual(t, "some text here", result)
 }
 
-func TestHighlight_Good_OverlappingExtension(t *testing.T) {
+func TestHighlight_Good_OverlappingExtension(t *T) {
 	// Test overlapping matches where the second match extends past the
 	// first, exercising the curr.end extension branch in merging.
 	text := "abcdefghij"
@@ -382,10 +379,10 @@ func TestHighlight_Good_OverlappingExtension(t *testing.T) {
 	re2, _ := regexp.Compile("cdefghij")
 
 	result := highlight(text, []*regexp.Regexp{re1, re2})
-	assert.Equal(t, "**abcdefghij**", result)
+	AssertEqual(t, "**abcdefghij**", result)
 }
 
-func TestSearchIndex_Search_Good_NilTopicGuard(t *testing.T) {
+func TestSearchIndex_Search_Good_NilTopicGuard(t *T) {
 	// Manually inject a stale reference in the scores map so the
 	// nil-topic guard is exercised. We do this by manipulating the
 	// index directly.
@@ -402,11 +399,11 @@ func TestSearchIndex_Search_Good_NilTopicGuard(t *testing.T) {
 
 	results := idx.Search("testword")
 	// Should still find the real topic, ghost-topic should be skipped.
-	assert.Len(t, results, 1)
-	assert.Equal(t, "real-topic", results[0].Topic.ID)
+	AssertLen(t, results, 1)
+	AssertEqual(t, "real-topic", results[0].Topic.ID)
 }
 
-func TestSearchIndex_Search_Good_SpecialCharacters(t *testing.T) {
+func TestSearchIndex_Search_Good_SpecialCharacters(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -415,19 +412,19 @@ func TestSearchIndex_Search_Good_SpecialCharacters(t *testing.T) {
 		Content: "Configure rate-limiting rules with special characters: @#$%.",
 	})
 
-	t.Run("query with special characters", func(t *testing.T) {
+	t.Run("query with special characters", func(t *T) {
 		results := idx.Search("rate limiting")
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "special-chars", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "special-chars", results[0].Topic.ID)
 	})
 
-	t.Run("query with punctuation stripped", func(t *testing.T) {
+	t.Run("query with punctuation stripped", func(t *T) {
 		results := idx.Search("v2.0")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 	})
 }
 
-func TestSearchIndex_Search_Good_CaseInsensitive(t *testing.T) {
+func TestSearchIndex_Search_Good_CaseInsensitive(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -436,19 +433,19 @@ func TestSearchIndex_Search_Good_CaseInsensitive(t *testing.T) {
 		Content: "MiXeD CaSe content here.",
 	})
 
-	t.Run("lowercase query finds uppercase content", func(t *testing.T) {
+	t.Run("lowercase query finds uppercase content", func(t *T) {
 		results := idx.Search("uppercase")
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "case-test", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "case-test", results[0].Topic.ID)
 	})
 
-	t.Run("uppercase query finds content", func(t *testing.T) {
+	t.Run("uppercase query finds content", func(t *T) {
 		results := idx.Search("MIXED")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 	})
 }
 
-func TestSearchIndex_Search_Good_SingleCharQuery(t *testing.T) {
+func TestSearchIndex_Search_Good_SingleCharQuery(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -460,12 +457,12 @@ func TestSearchIndex_Search_Good_SingleCharQuery(t *testing.T) {
 	// Single-character queries are filtered out by tokenize (min 2 chars),
 	// so searching for "a" should return nil.
 	results := idx.Search("a")
-	assert.Nil(t, results)
+	AssertNil(t, results)
 }
 
 // --- Phase 1: Fuzzy matching tests ---
 
-func TestLevenshtein_Good(t *testing.T) {
+func TestLevenshtein_Good(t *T) {
 	tests := []struct {
 		name     string
 		a        string
@@ -488,14 +485,14 @@ func TestLevenshtein_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			result := levenshtein(tt.a, tt.b)
-			assert.Equal(t, tt.expected, result)
+			AssertEqual(t, tt.expected, result)
 		})
 	}
 }
 
-func TestMin3_Good(t *testing.T) {
+func TestMin3_Good(t *T) {
 	tests := []struct {
 		name     string
 		a, b, c  int
@@ -512,14 +509,14 @@ func TestMin3_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			result := min(tt.a, tt.b, tt.c)
-			assert.Equal(t, tt.expected, result)
+			AssertEqual(t, tt.expected, result)
 		})
 	}
 }
 
-func TestSearchIndex_Search_Good_FuzzyMatching(t *testing.T) {
+func TestSearchIndex_Search_Good_FuzzyMatching(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -534,10 +531,10 @@ func TestSearchIndex_Search_Good_FuzzyMatching(t *testing.T) {
 		Content: "Deploy your application to production servers.",
 	})
 
-	t.Run("typo in query finds correct topic", func(t *testing.T) {
+	t.Run("typo in query finds correct topic", func(t *T) {
 		// "configuraton" is 1 edit away from "configuration"
 		results := idx.Search("configuraton")
-		assert.NotEmpty(t, results, "fuzzy match should find results for typo")
+		AssertNotEmpty(t, results, "fuzzy match should find results for typo")
 		found := false
 		for _, r := range results {
 			if r.Topic.ID == "configuration" {
@@ -545,23 +542,23 @@ func TestSearchIndex_Search_Good_FuzzyMatching(t *testing.T) {
 				break
 			}
 		}
-		assert.True(t, found, "should find configuration topic with typo")
+		AssertTrue(t, found, "should find configuration topic with typo")
 	})
 
-	t.Run("two-edit typo still matches", func(t *testing.T) {
+	t.Run("two-edit typo still matches", func(t *T) {
 		// "deplymnt" is within 2 edits of "deployment" -- but first check
 		// that "deploymnt" (1 edit) works.
 		results := idx.Search("deploymnt")
-		assert.NotEmpty(t, results, "fuzzy match should find results for 1-edit typo")
+		AssertNotEmpty(t, results, "fuzzy match should find results for 1-edit typo")
 	})
 
-	t.Run("too many edits returns no fuzzy match", func(t *testing.T) {
+	t.Run("too many edits returns no fuzzy match", func(t *T) {
 		// "zzzzzzz" is very far from any indexed word.
 		results := idx.Search("zzzzzzz")
-		assert.Empty(t, results, "large edit distance should not produce results")
+		AssertEmpty(t, results, "large edit distance should not produce results")
 	})
 
-	t.Run("short words skip fuzzy matching", func(t *testing.T) {
+	t.Run("short words skip fuzzy matching", func(t *T) {
 		// Words shorter than 3 characters skip fuzzy matching.
 		// "to" is in the index but "tx" (1 edit) should not fuzzy-match
 		// because "tx" is only 2 chars.
@@ -570,13 +567,13 @@ func TestSearchIndex_Search_Good_FuzzyMatching(t *testing.T) {
 		_ = results
 	})
 
-	t.Run("fuzzy scores lower than exact", func(t *testing.T) {
+	t.Run("fuzzy scores lower than exact", func(t *T) {
 		// Exact match on "configure" should score higher than fuzzy.
 		exactResults := idx.Search("configure")
 		fuzzyResults := idx.Search("configurr")
 
 		if len(exactResults) > 0 && len(fuzzyResults) > 0 {
-			assert.GreaterOrEqual(t, exactResults[0].Score, fuzzyResults[0].Score,
+			AssertGreaterOrEqual(t, exactResults[0].Score, fuzzyResults[0].Score,
 				"exact match should score at least as high as fuzzy match")
 		}
 	})
@@ -584,7 +581,7 @@ func TestSearchIndex_Search_Good_FuzzyMatching(t *testing.T) {
 
 // --- Phase 1: Phrase search tests ---
 
-func TestExtractPhrases_Good(t *testing.T) {
+func TestExtractPhrases_Good(t *T) {
 	tests := []struct {
 		name              string
 		query             string
@@ -636,15 +633,15 @@ func TestExtractPhrases_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			phrases, remaining := extractPhrases(tt.query)
-			assert.Equal(t, tt.expectedPhrases, phrases)
-			assert.Equal(t, tt.expectedRemaining, remaining)
+			AssertEqual(t, tt.expectedPhrases, phrases)
+			AssertEqual(t, tt.expectedRemaining, remaining)
 		})
 	}
 }
 
-func TestSearchIndex_Search_Good_PhraseSearch(t *testing.T) {
+func TestSearchIndex_Search_Good_PhraseSearch(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -661,38 +658,38 @@ func TestSearchIndex_Search_Good_PhraseSearch(t *testing.T) {
 		Tags:    []string{"errors"},
 	})
 
-	t.Run("quoted phrase matches exact sequence", func(t *testing.T) {
+	t.Run("quoted phrase matches exact sequence", func(t *T) {
 		results := idx.Search(`"rate limit"`)
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 		// rate-limiting topic has "rate limit" as exact phrase
-		assert.Equal(t, "rate-limiting", results[0].Topic.ID)
+		AssertEqual(t, "rate-limiting", results[0].Topic.ID)
 	})
 
-	t.Run("unquoted words match both topics", func(t *testing.T) {
+	t.Run("unquoted words match both topics", func(t *T) {
 		results := idx.Search("rate limit")
-		assert.GreaterOrEqual(t, len(results), 2,
+		AssertGreaterOrEqual(t, len(results), 2,
 			"unquoted query should match both topics that contain the words separately")
 	})
 
-	t.Run("phrase not found yields no phrase boost", func(t *testing.T) {
+	t.Run("phrase not found yields no phrase boost", func(t *T) {
 		results := idx.Search(`"nonexistent phrase here"`)
-		assert.Empty(t, results, "phrase with no tokenisable words and no match should return empty")
+		AssertEmpty(t, results, "phrase with no tokenisable words and no match should return empty")
 	})
 
-	t.Run("phrase with surrounding keywords", func(t *testing.T) {
+	t.Run("phrase with surrounding keywords", func(t *T) {
 		results := idx.Search(`"rate limit" api`)
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "rate-limiting", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "rate-limiting", results[0].Topic.ID)
 	})
 
-	t.Run("phrase-only query with no loose words", func(t *testing.T) {
+	t.Run("phrase-only query with no loose words", func(t *T) {
 		// Query is only a quoted phrase; tokenize of remaining is empty,
 		// but phrase matching should still score topics.
 		results := idx.Search(`"rate limit"`)
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 	})
 
-	t.Run("phrase found in section content", func(t *testing.T) {
+	t.Run("phrase found in section content", func(t *T) {
 		sectionIdx := newSearchIndex()
 		sectionIdx.Add(&Topic{
 			ID:      "section-phrase",
@@ -708,14 +705,14 @@ func TestSearchIndex_Search_Good_PhraseSearch(t *testing.T) {
 		})
 
 		results := sectionIdx.Search(`"rate limit"`)
-		assert.NotEmpty(t, results)
-		assert.Equal(t, "section-phrase", results[0].Topic.ID)
+		AssertNotEmpty(t, results)
+		AssertEqual(t, "section-phrase", results[0].Topic.ID)
 	})
 }
 
 // --- Phase 1: Improved scoring tests ---
 
-func TestSearchIndex_Search_Good_TagBoost(t *testing.T) {
+func TestSearchIndex_Search_Good_TagBoost(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -732,14 +729,14 @@ func TestSearchIndex_Search_Good_TagBoost(t *testing.T) {
 	})
 
 	results := idx.Search("deployment")
-	assert.NotEmpty(t, results)
+	AssertNotEmpty(t, results)
 
 	// The tagged topic should rank higher because of the tag boost.
-	assert.Equal(t, "tagged-topic", results[0].Topic.ID,
+	AssertEqual(t, "tagged-topic", results[0].Topic.ID,
 		"topic with matching tag should rank higher")
 }
 
-func TestSearchIndex_Search_Good_MultiWordBonus(t *testing.T) {
+func TestSearchIndex_Search_Good_MultiWordBonus(t *T) {
 	idx := newSearchIndex()
 
 	// Both topics have neutral titles (no query words in title) to
@@ -757,28 +754,28 @@ func TestSearchIndex_Search_Good_MultiWordBonus(t *testing.T) {
 	})
 
 	results := idx.Search("deploying monitoring")
-	assert.NotEmpty(t, results)
+	AssertNotEmpty(t, results)
 
 	// Topic with both words should score higher due to multi-word bonus.
-	assert.Equal(t, "both-words", results[0].Topic.ID,
+	AssertEqual(t, "both-words", results[0].Topic.ID,
 		"topic containing all query words should rank higher")
 }
 
-func TestSearchIndex_Search_Good_ScoringConstants(t *testing.T) {
+func TestSearchIndex_Search_Good_ScoringConstants(t *T) {
 	// Verify the scoring constants are sensible relative to each other.
-	assert.Greater(t, scoreTitleBoost, scoreSectionBoost,
+	AssertGreater(t, scoreTitleBoost, scoreSectionBoost,
 		"title boost should exceed section boost")
-	assert.Greater(t, scoreSectionBoost, scoreTagBoost,
+	AssertGreater(t, scoreSectionBoost, scoreTagBoost,
 		"section boost should exceed tag boost")
-	assert.Greater(t, scoreExactWord, scorePrefixWord,
+	AssertGreater(t, scoreExactWord, scorePrefixWord,
 		"exact match should score higher than prefix match")
-	assert.Greater(t, scorePrefixWord, scoreFuzzyWord,
+	AssertGreater(t, scorePrefixWord, scoreFuzzyWord,
 		"prefix match should score higher than fuzzy match")
-	assert.Greater(t, scorePhraseBoost, scoreAllWords,
+	AssertGreater(t, scorePhraseBoost, scoreAllWords,
 		"phrase boost should exceed multi-word bonus")
 }
 
-func TestSearchIndex_Search_Good_PhraseHighlighting(t *testing.T) {
+func TestSearchIndex_Search_Good_PhraseHighlighting(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -788,44 +785,44 @@ func TestSearchIndex_Search_Good_PhraseHighlighting(t *testing.T) {
 	})
 
 	results := idx.Search(`"rate limit" api`)
-	assert.NotEmpty(t, results)
+	AssertNotEmpty(t, results)
 
 	// The snippet should highlight both the phrase and keyword.
 	if results[0].Snippet != "" {
-		assert.Contains(t, results[0].Snippet, "**rate limit**",
+		AssertContains(t, results[0].Snippet, "**rate limit**",
 			"phrase should be highlighted in snippet")
 	}
 }
 
 // --- Phase 0 additional tests: expanded edge cases ---
 
-func TestSearchIndex_Search_Bad_EmptyQuery(t *testing.T) {
+func TestSearchIndex_Search_Bad_EmptyQuery(t *T) {
 	idx := newSearchIndex()
 	idx.Add(&Topic{ID: "test", Title: "Test Topic", Content: "Some content."})
 
-	t.Run("empty string", func(t *testing.T) {
+	t.Run("empty string", func(t *T) {
 		results := idx.Search("")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 
-	t.Run("whitespace only", func(t *testing.T) {
+	t.Run("whitespace only", func(t *T) {
 		results := idx.Search("   ")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 
-	t.Run("single character", func(t *testing.T) {
+	t.Run("single character", func(t *T) {
 		// Single chars are filtered by tokenize (min 2 chars)
 		results := idx.Search("a")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 
-	t.Run("punctuation only", func(t *testing.T) {
+	t.Run("punctuation only", func(t *T) {
 		results := idx.Search("!@#$%")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 }
 
-func TestSearchIndex_Search_Bad_NoResults(t *testing.T) {
+func TestSearchIndex_Search_Bad_NoResults(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -834,19 +831,19 @@ func TestSearchIndex_Search_Bad_NoResults(t *testing.T) {
 		Content: "Building applications with Go and goroutines.",
 	})
 
-	t.Run("completely unrelated query", func(t *testing.T) {
+	t.Run("completely unrelated query", func(t *T) {
 		results := idx.Search("quantum physics")
-		assert.Empty(t, results)
+		AssertEmpty(t, results)
 	})
 
-	t.Run("empty index", func(t *testing.T) {
+	t.Run("empty index", func(t *T) {
 		emptyIdx := newSearchIndex()
 		results := emptyIdx.Search("anything")
-		assert.Empty(t, results)
+		AssertEmpty(t, results)
 	})
 }
 
-func TestSearchIndex_Search_Good_CaseSensitivity(t *testing.T) {
+func TestSearchIndex_Search_Good_CaseSensitivity(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -855,32 +852,32 @@ func TestSearchIndex_Search_Good_CaseSensitivity(t *testing.T) {
 		Content: "Configure POSTGRESQL settings. The postgresql.conf file controls everything.",
 	})
 
-	t.Run("lowercase query matches uppercase content", func(t *testing.T) {
+	t.Run("lowercase query matches uppercase content", func(t *T) {
 		results := idx.Search("postgresql")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "case-test", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "case-test", results[0].Topic.ID)
 	})
 
-	t.Run("uppercase query matches lowercase content", func(t *testing.T) {
+	t.Run("uppercase query matches lowercase content", func(t *T) {
 		results := idx.Search("POSTGRESQL")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "case-test", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "case-test", results[0].Topic.ID)
 	})
 
-	t.Run("mixed case query matches", func(t *testing.T) {
+	t.Run("mixed case query matches", func(t *T) {
 		results := idx.Search("PostgreSQL")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "case-test", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "case-test", results[0].Topic.ID)
 	})
 
-	t.Run("title case sensitivity", func(t *testing.T) {
+	t.Run("title case sensitivity", func(t *T) {
 		results := idx.Search("configuration")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "case-test", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "case-test", results[0].Topic.ID)
 	})
 }
 
-func TestSearchIndex_Search_Good_MultiWord(t *testing.T) {
+func TestSearchIndex_Search_Good_MultiWord(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -899,38 +896,38 @@ func TestSearchIndex_Search_Good_MultiWord(t *testing.T) {
 		Content: "Setting up a Kubernetes cluster for production.",
 	})
 
-	t.Run("both words match same topic", func(t *testing.T) {
+	t.Run("both words match same topic", func(t *T) {
 		results := idx.Search("docker compose")
-		require.NotEmpty(t, results)
+		RequireNotEmpty(t, results)
 		// docker-compose should rank highest (both words in title + content)
-		assert.Equal(t, "docker-compose", results[0].Topic.ID)
+		AssertEqual(t, "docker-compose", results[0].Topic.ID)
 	})
 
-	t.Run("one word matches multiple topics", func(t *testing.T) {
+	t.Run("one word matches multiple topics", func(t *T) {
 		results := idx.Search("docker")
-		require.Len(t, results, 2)
+		AssertLen(t, results, 2)
 		// Both docker topics should appear
 		ids := []string{results[0].Topic.ID, results[1].Topic.ID}
-		assert.Contains(t, ids, "docker-compose")
-		assert.Contains(t, ids, "docker-basics")
+		AssertContains(t, ids, "docker-compose")
+		AssertContains(t, ids, "docker-basics")
 	})
 
-	t.Run("words from different topics", func(t *testing.T) {
+	t.Run("words from different topics", func(t *T) {
 		results := idx.Search("docker kubernetes")
-		require.NotEmpty(t, results)
+		RequireNotEmpty(t, results)
 		// All three topics should match (docker matches 2, kubernetes matches 1)
-		assert.GreaterOrEqual(t, len(results), 3)
+		AssertGreaterOrEqual(t, len(results), 3)
 	})
 
-	t.Run("three word query narrows results", func(t *testing.T) {
+	t.Run("three word query narrows results", func(t *T) {
 		results := idx.Search("docker compose setup")
-		require.NotEmpty(t, results)
+		RequireNotEmpty(t, results)
 		// docker-compose has all three words, should rank first
-		assert.Equal(t, "docker-compose", results[0].Topic.ID)
+		AssertEqual(t, "docker-compose", results[0].Topic.ID)
 	})
 }
 
-func TestSearchIndex_Search_Good_SpecialCharsExpanded(t *testing.T) {
+func TestSearchIndex_Search_Good_SpecialCharsExpanded(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -949,29 +946,29 @@ func TestSearchIndex_Search_Good_SpecialCharsExpanded(t *testing.T) {
 		Content: "Use @username to mention users in comments.",
 	})
 
-	t.Run("query with at symbol", func(t *testing.T) {
+	t.Run("query with at symbol", func(t *T) {
 		// "@username" tokenises to "username" (@ is stripped)
 		results := idx.Search("@username")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "at-mentions", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "at-mentions", results[0].Topic.ID)
 	})
 
-	t.Run("query with dots", func(t *testing.T) {
+	t.Run("query with dots", func(t *T) {
 		// "smtp.example.com" tokenises to "smtp", "example", "com"
 		results := idx.Search("smtp.example.com")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "email-config", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "email-config", results[0].Topic.ID)
 	})
 
-	t.Run("query with underscores", func(t *testing.T) {
+	t.Run("query with underscores", func(t *T) {
 		// "SMTP_HOST" tokenises to "smtp", "host"
 		results := idx.Search("SMTP_HOST")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "email-config", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "email-config", results[0].Topic.ID)
 	})
 }
 
-func TestSearchIndex_Search_Good_OverlappingMatches(t *testing.T) {
+func TestSearchIndex_Search_Good_OverlappingMatches(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -982,13 +979,13 @@ func TestSearchIndex_Search_Good_OverlappingMatches(t *testing.T) {
 
 	// "search" should match: "searching", "search", "searches", "searchable"
 	results := idx.Search("search")
-	require.NotEmpty(t, results)
-	assert.Equal(t, "search-guide", results[0].Topic.ID)
+	RequireNotEmpty(t, results)
+	AssertEqual(t, "search-guide", results[0].Topic.ID)
 	// Score should be boosted since "search" appears in the title
-	assert.Greater(t, results[0].Score, 10.0)
+	AssertGreater(t, results[0].Score, 10.0)
 }
 
-func TestSearchIndex_Search_Good_ScoringBoundary(t *testing.T) {
+func TestSearchIndex_Search_Good_ScoringBoundary(t *T) {
 	idx := newSearchIndex()
 
 	// Topic A: exact title match
@@ -1013,14 +1010,14 @@ func TestSearchIndex_Search_Good_ScoringBoundary(t *testing.T) {
 	})
 
 	results := idx.Search("installation")
-	require.Len(t, results, 2)
+	AssertLen(t, results, 2)
 
 	// Title match gets +10 boost, so "exact-title" should rank first
-	assert.Equal(t, "exact-title", results[0].Topic.ID, "exact title match should rank above body-heavy match")
-	assert.Greater(t, results[0].Score, results[1].Score)
+	AssertEqual(t, "exact-title", results[0].Topic.ID, "exact title match should rank above body-heavy match")
+	AssertGreater(t, results[0].Score, results[1].Score)
 }
 
-func TestSearchIndex_Search_Good_TagMatching(t *testing.T) {
+func TestSearchIndex_Search_Good_TagMatching(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -1032,11 +1029,11 @@ func TestSearchIndex_Search_Good_TagMatching(t *testing.T) {
 
 	// Search for a tag that does not appear in title or content
 	results := idx.Search("devops")
-	require.NotEmpty(t, results)
-	assert.Equal(t, "tagged-topic", results[0].Topic.ID)
+	RequireNotEmpty(t, results)
+	AssertEqual(t, "tagged-topic", results[0].Topic.ID)
 }
 
-func TestSearchIndex_Search_Good_SectionTitleBoost(t *testing.T) {
+func TestSearchIndex_Search_Good_SectionTitleBoost(t *T) {
 	idx := newSearchIndex()
 
 	idx.Add(&Topic{
@@ -1056,65 +1053,69 @@ func TestSearchIndex_Search_Good_SectionTitleBoost(t *testing.T) {
 	})
 
 	results := idx.Search("deployment")
-	require.Len(t, results, 2)
+	AssertLen(t, results, 2)
 
 	// Section title match gives +5 boost (in addition to other scoring)
 	sectionResult := results[0]
-	assert.Equal(t, "section-match", sectionResult.Topic.ID)
+	AssertEqual(t, "section-match", sectionResult.Topic.ID)
 	if sectionResult.Section != nil {
-		assert.Equal(t, "deployment", sectionResult.Section.ID)
+		AssertEqual(t, "deployment", sectionResult.Section.ID)
 	}
 }
 
-func TestTokenize_Good_SpecialCases(t *testing.T) {
-	t.Run("only special characters", func(t *testing.T) {
+func TestTokenize_Good_SpecialCases(t *T) {
+	t.Run("only special characters", func(t *T) {
 		result := tokenize("!@#$%^&*()")
-		assert.Nil(t, result)
+		AssertNil(t, result)
 	})
 
-	t.Run("unicode tokens", func(t *testing.T) {
+	t.Run("unicode tokens", func(t *T) {
 		result := tokenize("日本語 テスト")
-		assert.NotEmpty(t, result, "CJK characters should tokenise as words")
+		AssertNotEmpty(t, result, "CJK characters should tokenise as words")
 	})
 
-	t.Run("mixed unicode and ascii", func(t *testing.T) {
+	t.Run("mixed unicode and ascii", func(t *T) {
 		result := tokenize("hello 世界 world")
-		assert.Contains(t, result, "hello")
-		assert.Contains(t, result, "world")
+		AssertContains(t, result, "hello")
+		AssertContains(t, result, "world")
 	})
 
-	t.Run("numbers only", func(t *testing.T) {
+	t.Run("numbers only", func(t *T) {
 		result := tokenize("12345 67890")
-		assert.Equal(t, []string{"12345", "67890"}, result)
+		AssertEqual(t, []string{"12345", "67890"}, result)
 	})
 
-	t.Run("hyphenated words split", func(t *testing.T) {
+	t.Run("hyphenated words split", func(t *T) {
 		result := tokenize("pre-commit")
-		assert.Equal(t, []string{"pre", "commit"}, result)
+		AssertEqual(t, []string{"pre", "commit"}, result)
 	})
 }
 
-func TestHighlight_Good_NoMatches(t *testing.T) {
+func TestHighlight_Good_NoMatches(t *T) {
 	result := highlight("no matches here", compileRegexes([]string{"xyz"}))
-	assert.Equal(t, "no matches here", result)
+	AssertEqual(t, "no matches here", result)
+	AssertContains(t, result, "matches")
+	AssertNotContains(t, result, "**")
 }
 
-func TestHighlight_Good_AdjacentMatches(t *testing.T) {
+func TestHighlight_Good_AdjacentMatches(t *T) {
 	// Two words right next to each other
 	result := highlight("foobar", compileRegexes([]string{"foo", "bar"}))
 	// "foo" and "bar" are adjacent, should be merged into one highlight
-	assert.Equal(t, "**foobar**", result)
+	AssertEqual(t, "**foobar**", result)
+	AssertContains(t, result, "foobar")
+	AssertNotContains(t, result, "****")
 }
 
-func TestExtractSnippet_Good_HeadingsSkipped(t *testing.T) {
+func TestExtractSnippet_Good_HeadingsSkipped(t *T) {
 	// When no regex is given, snippet should skip heading lines
 	content := "# Heading\n\nActual content here."
 	snippet := extractSnippet(content, nil)
-	assert.Contains(t, snippet, "Actual content here.")
-	assert.NotContains(t, snippet, "# Heading")
+	AssertContains(t, snippet, "Actual content here.")
+	AssertNotContains(t, snippet, "# Heading")
 }
 
-func TestSearchIndex_Search_Good_DuplicateTopicIDs(t *testing.T) {
+func TestSearchIndex_Search_Good_DuplicateTopicIDs(t *T) {
 	idx := newSearchIndex()
 
 	// Adding the same topic twice should not cause duplicate results
@@ -1127,10 +1128,10 @@ func TestSearchIndex_Search_Good_DuplicateTopicIDs(t *testing.T) {
 	idx.Add(topic)
 
 	results := idx.Search("unique")
-	assert.Len(t, results, 1)
+	AssertLen(t, results, 1)
 }
 
-func TestCatalog_Search_Good_Integration(t *testing.T) {
+func TestCatalog_Search_Good_Integration(t *T) {
 	// Test the full Catalog.Search path (integration through catalog -> index)
 	cat := &Catalog{
 		topics: make(map[string]*Topic),
@@ -1150,20 +1151,20 @@ func TestCatalog_Search_Good_Integration(t *testing.T) {
 		Tags:    []string{"release"},
 	})
 
-	t.Run("search via catalog", func(t *testing.T) {
+	t.Run("search via catalog", func(t *T) {
 		results := cat.Search("alpha")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "alpha", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "alpha", results[0].Topic.ID)
 	})
 
-	t.Run("search by tag via catalog", func(t *testing.T) {
+	t.Run("search by tag via catalog", func(t *T) {
 		results := cat.Search("experimental")
-		require.NotEmpty(t, results)
-		assert.Equal(t, "alpha", results[0].Topic.ID)
+		RequireNotEmpty(t, results)
+		AssertEqual(t, "alpha", results[0].Topic.ID)
 	})
 
-	t.Run("empty query via catalog", func(t *testing.T) {
+	t.Run("empty query via catalog", func(t *T) {
 		results := cat.Search("")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 }

@@ -2,17 +2,14 @@
 package help
 
 import (
+	. "dappco.re/go"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // testServer creates a test catalog with topics and returns an httptest.Server.
-func testServer(t *testing.T) *httptest.Server {
+func testServer(t *T) *httptest.Server {
 	t.Helper()
 	c := &Catalog{
 		topics: make(map[string]*Topic),
@@ -40,158 +37,158 @@ func testServer(t *testing.T) *httptest.Server {
 	return httptest.NewServer(srv)
 }
 
-func TestServer_HandleIndex_Good(t *testing.T) {
+func TestServer_HandleIndex_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "text/html")
-	assert.Equal(t, "nosniff", resp.Header.Get("X-Content-Type-Options"))
+	AssertEqual(t, http.StatusOK, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "text/html")
+	AssertEqual(t, "nosniff", resp.Header.Get("X-Content-Type-Options"))
 
 	var buf [64 * 1024]byte
 	n, _ := resp.Body.Read(buf[:])
 	body := string(buf[:n])
-	assert.Contains(t, body, "Getting Started")
-	assert.Contains(t, body, "Configuration")
+	AssertContains(t, body, "Getting Started")
+	AssertContains(t, body, "Configuration")
 }
 
-func TestServer_HandleTopic_Good(t *testing.T) {
+func TestServer_HandleTopic_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/topics/getting-started")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "text/html")
+	AssertEqual(t, http.StatusOK, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "text/html")
 
 	var buf [64 * 1024]byte
 	n, _ := resp.Body.Read(buf[:])
 	body := string(buf[:n])
-	assert.Contains(t, body, "Getting Started")
-	assert.Contains(t, body, "<strong>guide</strong>")
+	AssertContains(t, body, "Getting Started")
+	AssertContains(t, body, "<strong>guide</strong>")
 }
 
-func TestServer_HandleTopic_Bad_NotFound(t *testing.T) {
+func TestServer_HandleTopic_Bad_NotFound(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/topics/nonexistent")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "text/html")
+	AssertEqual(t, http.StatusNotFound, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "text/html")
 }
 
-func TestServer_HandleSearch_Good(t *testing.T) {
+func TestServer_HandleSearch_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/search?q=install")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "text/html")
+	AssertEqual(t, http.StatusOK, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "text/html")
 
 	var buf [64 * 1024]byte
 	n, _ := resp.Body.Read(buf[:])
 	body := string(buf[:n])
-	assert.Contains(t, body, "install")
+	AssertContains(t, body, "install")
 }
 
-func TestServer_HandleSearch_Bad_NoQuery(t *testing.T) {
+func TestServer_HandleSearch_Bad_NoQuery(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/search")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	AssertEqual(t, http.StatusBadRequest, resp.StatusCode)
 }
 
-func TestServer_HandleAPITopics_Good(t *testing.T) {
+func TestServer_HandleAPITopics_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/api/topics")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
-	assert.Equal(t, "nosniff", resp.Header.Get("X-Content-Type-Options"))
+	AssertEqual(t, http.StatusOK, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
+	AssertEqual(t, "nosniff", resp.Header.Get("X-Content-Type-Options"))
 
 	var topics []Topic
-	require.NoError(t, json.NewDecoder(resp.Body).Decode(&topics))
-	assert.Len(t, topics, 2)
+	RequireNoError(t, json.NewDecoder(resp.Body).Decode(&topics))
+	AssertLen(t, topics, 2)
 }
 
-func TestServer_HandleAPITopic_Good(t *testing.T) {
+func TestServer_HandleAPITopic_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/api/topics/getting-started")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
+	AssertEqual(t, http.StatusOK, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 
 	var topic Topic
-	require.NoError(t, json.NewDecoder(resp.Body).Decode(&topic))
-	assert.Equal(t, "Getting Started", topic.Title)
-	assert.Equal(t, "getting-started", topic.ID)
+	RequireNoError(t, json.NewDecoder(resp.Body).Decode(&topic))
+	AssertEqual(t, "Getting Started", topic.Title)
+	AssertEqual(t, "getting-started", topic.ID)
 }
 
-func TestServer_HandleAPITopic_Bad_NotFound(t *testing.T) {
+func TestServer_HandleAPITopic_Bad_NotFound(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/api/topics/nonexistent")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
+	AssertEqual(t, http.StatusNotFound, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 }
 
-func TestServer_HandleAPISearch_Good(t *testing.T) {
+func TestServer_HandleAPISearch_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/api/search?q=config")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
+	AssertEqual(t, http.StatusOK, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 
 	var results []SearchResult
-	require.NoError(t, json.NewDecoder(resp.Body).Decode(&results))
-	assert.NotEmpty(t, results)
+	RequireNoError(t, json.NewDecoder(resp.Body).Decode(&results))
+	AssertNotEmpty(t, results)
 }
 
-func TestServer_HandleAPISearch_Bad_NoQuery(t *testing.T) {
+func TestServer_HandleAPISearch_Bad_NoQuery(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/api/search")
-	require.NoError(t, err)
+	RequireNoError(t, err)
 	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
+	AssertEqual(t, http.StatusBadRequest, resp.StatusCode)
+	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 }
 
-func TestServer_ContentTypeHeaders_Good(t *testing.T) {
+func TestServer_ContentTypeHeaders_Good(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -209,23 +206,23 @@ func TestServer_ContentTypeHeaders_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			resp, err := http.Get(ts.URL + tt.path)
-			require.NoError(t, err)
+			RequireNoError(t, err)
 			defer resp.Body.Close()
 
-			assert.Contains(t, resp.Header.Get("Content-Type"), tt.contentType,
+			AssertContains(t, resp.Header.Get("Content-Type"), tt.contentType,
 				"Content-Type for %s should contain %s", tt.path, tt.contentType)
 		})
 	}
 }
 
-func TestNewServer_Good(t *testing.T) {
+func TestNewServer_Good(t *T) {
 	c := DefaultCatalog()
 	srv := NewServer(c, ":8080")
 
-	assert.NotNil(t, srv)
-	assert.Equal(t, ":8080", srv.addr)
-	assert.NotNil(t, srv.mux)
-	assert.Equal(t, c, srv.catalog)
+	AssertNotNil(t, srv)
+	AssertEqual(t, ":8080", srv.addr)
+	AssertNotNil(t, srv.mux)
+	AssertEqual(t, c, srv.catalog)
 }
