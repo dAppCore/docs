@@ -1,43 +1,40 @@
 package help
 
 import (
+	. "dappco.re/go"
 	"fmt"
 	"os"
 	"path/filepath"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestDefaultCatalog_Good(t *testing.T) {
+func TestDefaultCatalog_Good(t *T) {
 	c := DefaultCatalog()
 
-	require.NotNil(t, c)
-	require.NotNil(t, c.topics)
-	require.NotNil(t, c.index)
+	AssertNotNil(t, c)
+	AssertNotNil(t, c.topics)
+	AssertNotNil(t, c.index)
 
-	t.Run("contains built-in topics", func(t *testing.T) {
+	t.Run("contains built-in topics", func(t *T) {
 		topics := c.List()
-		assert.GreaterOrEqual(t, len(topics), 2, "should have at least 2 default topics")
+		AssertGreaterOrEqual(t, len(topics), 2, "should have at least 2 default topics")
 	})
 
-	t.Run("getting-started topic exists", func(t *testing.T) {
+	t.Run("getting-started topic exists", func(t *T) {
 		topic, err := c.Get("getting-started")
-		require.NoError(t, err)
-		assert.Equal(t, "Getting Started", topic.Title)
-		assert.Contains(t, topic.Content, "Common Commands")
+		RequireNoError(t, err)
+		AssertEqual(t, "Getting Started", topic.Title)
+		AssertContains(t, topic.Content, "Common Commands")
 	})
 
-	t.Run("config topic exists", func(t *testing.T) {
+	t.Run("config topic exists", func(t *T) {
 		topic, err := c.Get("config")
-		require.NoError(t, err)
-		assert.Equal(t, "Configuration", topic.Title)
-		assert.Contains(t, topic.Content, "Environment Variables")
+		RequireNoError(t, err)
+		AssertEqual(t, "Configuration", topic.Title)
+		AssertContains(t, topic.Content, "Environment Variables")
 	})
 }
 
-func TestCatalog_Add_Good(t *testing.T) {
+func TestCatalog_Add_Good(t *T) {
 	c := &Catalog{
 		topics: make(map[string]*Topic),
 		index:  newSearchIndex(),
@@ -52,18 +49,18 @@ func TestCatalog_Add_Good(t *testing.T) {
 
 	c.Add(topic)
 
-	t.Run("topic is retrievable after add", func(t *testing.T) {
+	t.Run("topic is retrievable after add", func(t *T) {
 		got, err := c.Get("test-topic")
-		require.NoError(t, err)
-		assert.Equal(t, topic, got)
+		RequireNoError(t, err)
+		AssertEqual(t, topic, got)
 	})
 
-	t.Run("topic is searchable after add", func(t *testing.T) {
+	t.Run("topic is searchable after add", func(t *T) {
 		results := c.Search("test")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 	})
 
-	t.Run("overwrite existing topic", func(t *testing.T) {
+	t.Run("overwrite existing topic", func(t *T) {
 		replacement := &Topic{
 			ID:      "test-topic",
 			Title:   "Replaced Topic",
@@ -72,61 +69,61 @@ func TestCatalog_Add_Good(t *testing.T) {
 		c.Add(replacement)
 
 		got, err := c.Get("test-topic")
-		require.NoError(t, err)
-		assert.Equal(t, "Replaced Topic", got.Title)
+		RequireNoError(t, err)
+		AssertEqual(t, "Replaced Topic", got.Title)
 	})
 }
 
-func TestCatalog_List_Good(t *testing.T) {
+func TestCatalog_List_Good(t *T) {
 	c := &Catalog{
 		topics: make(map[string]*Topic),
 		index:  newSearchIndex(),
 	}
 
-	t.Run("empty catalog returns empty list", func(t *testing.T) {
+	t.Run("empty catalog returns empty list", func(t *T) {
 		list := c.List()
-		assert.Empty(t, list)
+		AssertEmpty(t, list)
 	})
 
-	t.Run("returns all added topics", func(t *testing.T) {
+	t.Run("returns all added topics", func(t *T) {
 		c.Add(&Topic{ID: "alpha", Title: "Alpha"})
 		c.Add(&Topic{ID: "beta", Title: "Beta"})
 		c.Add(&Topic{ID: "gamma", Title: "Gamma"})
 
 		list := c.List()
-		assert.Len(t, list, 3)
+		AssertLen(t, list, 3)
 
 		// Collect IDs (order is not guaranteed from map)
 		ids := make(map[string]bool)
 		for _, t := range list {
 			ids[t.ID] = true
 		}
-		assert.True(t, ids["alpha"])
-		assert.True(t, ids["beta"])
-		assert.True(t, ids["gamma"])
+		AssertTrue(t, ids["alpha"])
+		AssertTrue(t, ids["beta"])
+		AssertTrue(t, ids["gamma"])
 	})
 }
 
-func TestCatalog_Search_Good(t *testing.T) {
+func TestCatalog_Search_Good(t *T) {
 	c := DefaultCatalog()
 
-	t.Run("finds default topics", func(t *testing.T) {
+	t.Run("finds default topics", func(t *T) {
 		results := c.Search("configuration")
-		assert.NotEmpty(t, results)
+		AssertNotEmpty(t, results)
 	})
 
-	t.Run("empty query returns nil", func(t *testing.T) {
+	t.Run("empty query returns nil", func(t *T) {
 		results := c.Search("")
-		assert.Nil(t, results)
+		AssertNil(t, results)
 	})
 
-	t.Run("no match returns empty", func(t *testing.T) {
+	t.Run("no match returns empty", func(t *T) {
 		results := c.Search("zzzyyyxxx")
-		assert.Empty(t, results)
+		AssertEmpty(t, results)
 	})
 }
 
-func TestCatalog_Get_Good(t *testing.T) {
+func TestCatalog_Get_Good(t *T) {
 	c := &Catalog{
 		topics: make(map[string]*Topic),
 		index:  newSearchIndex(),
@@ -134,22 +131,22 @@ func TestCatalog_Get_Good(t *testing.T) {
 
 	c.Add(&Topic{ID: "exists", Title: "Existing Topic"})
 
-	t.Run("existing topic", func(t *testing.T) {
+	t.Run("existing topic", func(t *T) {
 		topic, err := c.Get("exists")
-		require.NoError(t, err)
-		assert.Equal(t, "Existing Topic", topic.Title)
+		RequireNoError(t, err)
+		AssertEqual(t, "Existing Topic", topic.Title)
 	})
 
-	t.Run("missing topic returns error", func(t *testing.T) {
+	t.Run("missing topic returns error", func(t *T) {
 		topic, err := c.Get("does-not-exist")
-		assert.Nil(t, topic)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "topic not found")
-		assert.Contains(t, err.Error(), "does-not-exist")
+		AssertNil(t, topic)
+		AssertError(t, err)
+		AssertContains(t, err.Error(), "topic not found")
+		AssertContains(t, err.Error(), "does-not-exist")
 	})
 }
 
-func TestCatalog_Search_Good_ScoreTiebreaking(t *testing.T) {
+func TestCatalog_Search_Good_ScoreTiebreaking(t *T) {
 	// Tests the alphabetical tie-breaking in search result sorting (search.go:165).
 	c := &Catalog{
 		topics: make(map[string]*Topic),
@@ -169,52 +166,52 @@ func TestCatalog_Search_Good_ScoreTiebreaking(t *testing.T) {
 	})
 
 	results := c.Search("zephyr")
-	require.Len(t, results, 2)
+	AssertLen(t, results, 2)
 
 	// With equal scores, results should be sorted alphabetically by title.
-	assert.Equal(t, "Alpha", results[0].Topic.Title)
-	assert.Equal(t, "Zebra", results[1].Topic.Title)
-	assert.Equal(t, results[0].Score, results[1].Score,
+	AssertEqual(t, "Alpha", results[0].Topic.Title)
+	AssertEqual(t, "Zebra", results[1].Topic.Title)
+	AssertEqual(t, results[0].Score, results[1].Score,
 		"scores should be equal for tie-breaking to apply")
 }
 
-func TestCatalog_LoadContentDir_Good(t *testing.T) {
+func TestCatalog_LoadContentDir_Good(t *T) {
 	dir := t.TempDir()
 	os.MkdirAll(filepath.Join(dir, "cli"), 0o755)
 	os.WriteFile(filepath.Join(dir, "cli", "dev-work.md"), []byte("---\ntitle: Dev Work\ntags: [cli, dev]\n---\n\n## Usage\n\ncore dev work syncs your workspace.\n"), 0o644)
 	os.WriteFile(filepath.Join(dir, "cli", "setup.md"), []byte("---\ntitle: Setup\ntags: [cli]\n---\n\n## Installation\n\nRun core setup to get started.\n"), 0o644)
 
 	catalog, err := LoadContentDir(dir)
-	require.NoError(t, err)
-	assert.Len(t, catalog.List(), 2)
+	RequireNoError(t, err)
+	AssertLen(t, catalog.List(), 2)
 
 	devWork, err := catalog.Get("dev-work")
-	require.NoError(t, err)
-	assert.Equal(t, "Dev Work", devWork.Title)
-	assert.Contains(t, devWork.Tags, "cli")
+	RequireNoError(t, err)
+	AssertEqual(t, "Dev Work", devWork.Title)
+	AssertContains(t, devWork.Tags, "cli")
 
 	results := catalog.Search("workspace")
-	assert.NotEmpty(t, results)
+	AssertNotEmpty(t, results)
 }
 
-func TestCatalog_LoadContentDir_Good_Empty(t *testing.T) {
+func TestCatalog_LoadContentDir_Good_Empty(t *T) {
 	dir := t.TempDir()
 	catalog, err := LoadContentDir(dir)
-	require.NoError(t, err)
-	assert.Empty(t, catalog.List())
+	RequireNoError(t, err)
+	AssertEmpty(t, catalog.List())
 }
 
-func TestCatalog_LoadContentDir_Good_SkipsNonMd(t *testing.T) {
+func TestCatalog_LoadContentDir_Good_SkipsNonMd(t *T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("not markdown"), 0o644)
 	os.WriteFile(filepath.Join(dir, "topic.md"), []byte("---\ntitle: Topic\n---\n\nContent here.\n"), 0o644)
 
 	catalog, err := LoadContentDir(dir)
-	require.NoError(t, err)
-	assert.Len(t, catalog.List(), 1)
+	RequireNoError(t, err)
+	AssertLen(t, catalog.List(), 1)
 }
 
-func BenchmarkSearch(b *testing.B) {
+func BenchmarkSearch(b *B) {
 	// Build a catalog with 100+ topics for benchmarking.
 	c := &Catalog{
 		topics: make(map[string]*Topic),

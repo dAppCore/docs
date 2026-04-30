@@ -2,17 +2,14 @@
 package help
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	. "dappco.re/go"
 )
 
 // ---------------------------------------------------------------------------
 // stem() unit tests
 // ---------------------------------------------------------------------------
 
-func TestStem_Good(t *testing.T) {
+func TestStem_Good(t *T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -46,14 +43,14 @@ func TestStem_Good(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			result := stem(tt.input)
-			assert.Equal(t, tt.expected, result)
+			AssertEqual(t, tt.expected, result)
 		})
 	}
 }
 
-func TestStem_ShortWordsUnchanged(t *testing.T) {
+func TestStem_ShortWordsUnchanged(t *T) {
 	tests := []struct {
 		name  string
 		input string
@@ -65,25 +62,27 @@ func TestStem_ShortWordsUnchanged(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.input, stem(tt.input), "words under 4 chars should be unchanged")
+		t.Run(tt.name, func(t *T) {
+			AssertEqual(t, tt.input, stem(tt.input), "words under 4 chars should be unchanged")
 		})
 	}
 }
 
-func TestStem_GuardMinLength(t *testing.T) {
+func TestStem_GuardMinLength(t *T) {
 	// The stem function must never reduce a word below 2 characters.
 	// "ed" removal from a 4-char word like "abed" would leave "ab" (ok).
 	// We test that it doesn't return a single-char result.
 	result := stem("abed")
-	assert.GreaterOrEqual(t, len(result), 2, "result must be at least 2 chars")
+	AssertGreaterOrEqual(t, len(result), 2, "result must be at least 2 chars")
+	AssertNotEmpty(t, result)
+	AssertNotEqual(t, "a", result)
 }
 
 // ---------------------------------------------------------------------------
 // Search integration tests — stemming recall
 // ---------------------------------------------------------------------------
 
-func TestSearch_StemRunningMatchesRun(t *testing.T) {
+func TestSearch_StemRunningMatchesRun(t *T) {
 	idx := newSearchIndex()
 	idx.Add(&Topic{
 		ID:      "topic-run",
@@ -92,11 +91,11 @@ func TestSearch_StemRunningMatchesRun(t *testing.T) {
 	})
 
 	results := idx.Search("running")
-	require.NotEmpty(t, results, "searching 'running' should match topic containing 'run'")
-	assert.Equal(t, "topic-run", results[0].Topic.ID)
+	RequireNotEmpty(t, results, "searching 'running' should match topic containing 'run'")
+	AssertEqual(t, "topic-run", results[0].Topic.ID)
 }
 
-func TestSearch_StemConfigurationsMatchesConfigure(t *testing.T) {
+func TestSearch_StemConfigurationsMatchesConfigure(t *T) {
 	idx := newSearchIndex()
 	idx.Add(&Topic{
 		ID:      "topic-configure",
@@ -105,11 +104,11 @@ func TestSearch_StemConfigurationsMatchesConfigure(t *testing.T) {
 	})
 
 	results := idx.Search("configurations")
-	require.NotEmpty(t, results, "searching 'configurations' should match topic containing 'configure'")
-	assert.Equal(t, "topic-configure", results[0].Topic.ID)
+	RequireNotEmpty(t, results, "searching 'configurations' should match topic containing 'configure'")
+	AssertEqual(t, "topic-configure", results[0].Topic.ID)
 }
 
-func TestSearch_StemPluralServersMatchesServer(t *testing.T) {
+func TestSearch_StemPluralServersMatchesServer(t *T) {
 	idx := newSearchIndex()
 	idx.Add(&Topic{
 		ID:      "topic-server",
@@ -118,11 +117,11 @@ func TestSearch_StemPluralServersMatchesServer(t *testing.T) {
 	})
 
 	results := idx.Search("servers")
-	require.NotEmpty(t, results, "searching 'servers' should match topic containing 'server'")
-	assert.Equal(t, "topic-server", results[0].Topic.ID)
+	RequireNotEmpty(t, results, "searching 'servers' should match topic containing 'server'")
+	AssertEqual(t, "topic-server", results[0].Topic.ID)
 }
 
-func TestSearch_StemScoringLowerThanExact(t *testing.T) {
+func TestSearch_StemScoringLowerThanExact(t *T) {
 	idx := newSearchIndex()
 	idx.Add(&Topic{
 		ID:      "exact-match",
@@ -136,7 +135,7 @@ func TestSearch_StemScoringLowerThanExact(t *testing.T) {
 	})
 
 	results := idx.Search("running")
-	require.Len(t, results, 2, "should match both topics")
+	AssertLen(t, results, 2, "should match both topics")
 
 	// The topic containing the exact word "running" should score higher
 	// than the one matched only via the stem "run" (all else being equal,
@@ -150,11 +149,11 @@ func TestSearch_StemScoringLowerThanExact(t *testing.T) {
 			stemScore = r.Score
 		}
 	}
-	assert.Greater(t, exactScore, stemScore,
+	AssertGreater(t, exactScore, stemScore,
 		"exact word match should score higher than stem-only match")
 }
 
-func TestSearch_ExistingExactMatchUnaffected(t *testing.T) {
+func TestSearch_ExistingExactMatchUnaffected(t *T) {
 	// Ensure stemming doesn't break exact-match searches.
 	idx := newSearchIndex()
 	idx.Add(&Topic{
@@ -164,29 +163,29 @@ func TestSearch_ExistingExactMatchUnaffected(t *testing.T) {
 	})
 
 	results := idx.Search("deploy")
-	require.NotEmpty(t, results)
-	assert.Equal(t, "topic-deploy", results[0].Topic.ID)
+	RequireNotEmpty(t, results)
+	AssertEqual(t, "topic-deploy", results[0].Topic.ID)
 }
 
-func TestTokenize_IncludesStemmedVariants(t *testing.T) {
+func TestTokenize_IncludesStemmedVariants(t *T) {
 	words := tokenize("running configurations servers")
 
 	// Should contain originals
-	assert.Contains(t, words, "running")
-	assert.Contains(t, words, "configurations")
-	assert.Contains(t, words, "servers")
+	AssertContains(t, words, "running")
+	AssertContains(t, words, "configurations")
+	AssertContains(t, words, "servers")
 
 	// Should also contain stems
-	assert.Contains(t, words, "runn")        // stem of running (ing removed)
-	assert.Contains(t, words, "configurate") // stem of configurations (s->configuration->ation->ate)
-	assert.Contains(t, words, "server")      // stem of servers (s removed)
+	AssertContains(t, words, "runn")        // stem of running (ing removed)
+	AssertContains(t, words, "configurate") // stem of configurations (s->configuration->ation->ate)
+	AssertContains(t, words, "server")      // stem of servers (s removed)
 }
 
 // ---------------------------------------------------------------------------
 // Benchmark
 // ---------------------------------------------------------------------------
 
-func BenchmarkStem(b *testing.B) {
+func BenchmarkStem(b *B) {
 	words := []string{
 		"running", "configurations", "servers", "deployment", "testing",
 		"addresses", "agreed", "configured", "operational", "cheerfulness",

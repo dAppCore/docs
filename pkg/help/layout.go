@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"html"
 	"strings"
-
-	gohtml "forge.lthn.ai/core/go-html"
 )
 
 // pageCSS is the shared dark-theme stylesheet embedded in every page.
@@ -155,29 +153,37 @@ li { margin: 0.25rem 0; }
 .centre { text-align: center; }
 `
 
-// wrapPage wraps an HLCRF layout node in a complete HTML document.
-func wrapPage(title string, layout gohtml.Node) string {
-	head := gohtml.Raw(fmt.Sprintf(
+// wrapPage wraps semantic page regions in a complete HTML document.
+func wrapPage(title string, body string) string {
+	return fmt.Sprintf(
 		`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`+
 			`<meta name="viewport" content="width=device-width, initial-scale=1.0">`+
 			`<title>%s</title><style>%s</style></head><body>`,
 		html.EscapeString(title), pageCSS,
-	))
-	tail := gohtml.Raw(`</body></html>`)
+	) + body + `</body></html>`
+}
 
-	doc := gohtml.El("div", head, layout, tail)
-	ctx := gohtml.NewContext()
-	// Render and strip the wrapper div
-	rendered := gohtml.Render(doc, ctx)
-	rendered = strings.TrimPrefix(rendered, "<div>")
-	rendered = strings.TrimSuffix(rendered, "</div>")
-	return rendered
+func renderHCF(title, header, content, footer string) string {
+	return wrapPage(title,
+		`<header role="banner" data-block="H">`+header+`</header>`+
+			`<main role="main" data-block="C">`+content+`</main>`+
+			`<footer role="contentinfo" data-block="F">`+footer+`</footer>`,
+	)
+}
+
+func renderHLCF(title, header, sidebar, content, footer string) string {
+	return wrapPage(title,
+		`<header role="banner" data-block="H">`+header+`</header>`+
+			`<aside role="complementary" data-block="L">`+sidebar+`</aside>`+
+			`<main role="main" data-block="C">`+content+`</main>`+
+			`<footer role="contentinfo" data-block="F">`+footer+`</footer>`,
+	)
 }
 
 // headerNav returns the HLCRF Header node: nav bar with brand + search form.
-func headerNav(searchValue string) gohtml.Node {
+func headerNav(searchValue string) string {
 	escapedValue := html.EscapeString(searchValue)
-	return gohtml.Raw(fmt.Sprintf(
+	return fmt.Sprintf(
 		`<nav><div class="container">`+
 			`<a href="/" class="brand">core.help</a>`+
 			`<form class="search-form" action="/search" method="get">`+
@@ -185,22 +191,20 @@ func headerNav(searchValue string) gohtml.Node {
 			`</form>`+
 			`</div></nav>`,
 		escapedValue,
-	))
-}
-
-// footerContent returns the HLCRF Footer node: licence + source link.
-func footerContent() gohtml.Node {
-	return gohtml.Raw(
-		`<div class="container">` +
-			`EUPL-1.2 &middot; <a href="https://forge.lthn.ai/core/docs">forge.lthn.ai/core/docs</a>` +
-			`</div>`,
 	)
 }
 
+// footerContent returns the HLCRF Footer node: licence + source link.
+func footerContent() string {
+	return `<div class="container">` +
+		`EUPL-1.2 &middot; <a href="https://forge.lthn.ai/core/docs">forge.lthn.ai/core/docs</a>` +
+		`</div>`
+}
+
 // sidebarTopicTree returns a sidebar node showing topics grouped by tag.
-func sidebarTopicTree(topics []*Topic) gohtml.Node {
+func sidebarTopicTree(topics []*Topic) string {
 	if len(topics) == 0 {
-		return gohtml.Raw("")
+		return ""
 	}
 
 	groups := groupTopicsByTag(topics)
@@ -224,13 +228,13 @@ func sidebarTopicTree(topics []*Topic) gohtml.Node {
 	}
 
 	b.WriteString(`</div>`)
-	return gohtml.Raw(b.String())
+	return b.String()
 }
 
 // topicTableOfContents returns a ToC node with section anchors.
-func topicTableOfContents(sections []Section) gohtml.Node {
+func topicTableOfContents(sections []Section) string {
 	if len(sections) == 0 {
-		return gohtml.Raw("")
+		return ""
 	}
 
 	var b strings.Builder
@@ -245,7 +249,7 @@ func topicTableOfContents(sections []Section) gohtml.Node {
 		))
 	}
 	b.WriteString(`</ul></div>`)
-	return gohtml.Raw(b.String())
+	return b.String()
 }
 
 // truncateContent returns a plain-text preview of markdown content.
@@ -269,12 +273,6 @@ func truncateContent(content string, maxLen int) string {
 
 // RenderIndexPage renders a full HTML page listing topics grouped by tag.
 func RenderIndexPage(topics []*Topic) string {
-	layout := gohtml.NewLayout("HCF")
-
-	// Header
-	layout.H(headerNav(""))
-
-	// Content
 	var content strings.Builder
 	content.WriteString(`<div class="container">`)
 
@@ -326,32 +324,14 @@ func RenderIndexPage(topics []*Topic) string {
 	}
 
 	content.WriteString(`</div>`)
-	layout.C(gohtml.Raw(content.String()))
 
-	// Footer
-	layout.F(footerContent())
-
-	return wrapPage("Help Topics", layout)
+	return renderHCF("Help Topics", headerNav(""), content.String(), footerContent())
 }
 
 // RenderTopicPage renders a full HTML page for a single topic with ToC and sidebar.
 func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 	hasSidebar := len(sidebar) > 0
-	variant := "HCF"
-	if hasSidebar {
-		variant = "HLCF"
-	}
-	layout := gohtml.NewLayout(variant)
 
-	// Header
-	layout.H(headerNav(""))
-
-	// Left sidebar (only when sidebar topics provided)
-	if hasSidebar {
-		layout.L(sidebarTopicTree(sidebar))
-	}
-
-	// Content
 	var content strings.Builder
 	content.WriteString(`<div class="container">`)
 
@@ -369,8 +349,7 @@ func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 
 	// Table of contents (inline, before content)
 	if len(topic.Sections) > 0 {
-		ctx := gohtml.NewContext()
-		content.WriteString(topicTableOfContents(topic.Sections).Render(ctx))
+		content.WriteString(topicTableOfContents(topic.Sections))
 	}
 
 	// Rendered markdown body
@@ -398,23 +377,16 @@ func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 	}
 
 	content.WriteString(`</div>`)
-	layout.C(gohtml.Raw(content.String()))
-
-	// Footer
-	layout.F(footerContent())
 
 	title := html.EscapeString(topic.Title) + " - Help"
-	return wrapPage(title, layout)
+	if hasSidebar {
+		return renderHLCF(title, headerNav(""), sidebarTopicTree(sidebar), content.String(), footerContent())
+	}
+	return renderHCF(title, headerNav(""), content.String(), footerContent())
 }
 
 // RenderSearchPage renders a full HTML page showing search results.
 func RenderSearchPage(query string, results []*SearchResult) string {
-	layout := gohtml.NewLayout("HCF")
-
-	// Header (pre-fill search box with query)
-	layout.H(headerNav(query))
-
-	// Content
 	var content strings.Builder
 	content.WriteString(`<div class="container">`)
 	content.WriteString(`<h1>Search Results</h1>`)
@@ -464,34 +436,18 @@ func RenderSearchPage(query string, results []*SearchResult) string {
 	}
 
 	content.WriteString(`</div>`)
-	layout.C(gohtml.Raw(content.String()))
 
-	// Footer
-	layout.F(footerContent())
-
-	return wrapPage("Search: "+html.EscapeString(query)+" - Help", layout)
+	return renderHCF("Search: "+html.EscapeString(query)+" - Help", headerNav(query), content.String(), footerContent())
 }
 
 // Render404Page renders a full HTML "Not Found" page.
 func Render404Page() string {
-	layout := gohtml.NewLayout("HCF")
+	content := `<div class="container centre" style="margin-top: 4rem;">` +
+		`<h1 style="font-size: 3rem; border: none; color: var(--fg-muted);">404</h1>` +
+		`<p style="font-size: 1.1rem; color: var(--fg-muted);">Not Found</p>` +
+		`<p style="margin-top: 1.5rem;">` +
+		`<a href="/">Browse all topics</a> or try searching above.` +
+		`</p></div>`
 
-	// Header
-	layout.H(headerNav(""))
-
-	// Content
-	content := gohtml.Raw(
-		`<div class="container centre" style="margin-top: 4rem;">` +
-			`<h1 style="font-size: 3rem; border: none; color: var(--fg-muted);">404</h1>` +
-			`<p style="font-size: 1.1rem; color: var(--fg-muted);">Not Found</p>` +
-			`<p style="margin-top: 1.5rem;">` +
-			`<a href="/">Browse all topics</a> or try searching above.` +
-			`</p></div>`,
-	)
-	layout.C(content)
-
-	// Footer
-	layout.F(footerContent())
-
-	return wrapPage("Not Found - Help", layout)
+	return renderHCF("Not Found - Help", headerNav(""), content, footerContent())
 }

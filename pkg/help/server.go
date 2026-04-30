@@ -116,7 +116,9 @@ func (s *Server) handleAPITopic(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode(map[string]string{"error": "topic not found"})
+		if err := json.NewEncoder(w).Encode(map[string]string{"error": "topic not found"}); err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -133,7 +135,9 @@ func (s *Server) handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	if query == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(map[string]string{"error": "missing query parameter 'q'"})
+		if err := json.NewEncoder(w).Encode(map[string]string{"error": "missing query parameter 'q'"}); err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 

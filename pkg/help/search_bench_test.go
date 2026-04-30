@@ -2,9 +2,9 @@
 package help
 
 import (
+	. "dappco.re/go"
 	"fmt"
 	"strings"
-	"testing"
 )
 
 // titleCase capitalises the first letter of a string.
@@ -83,7 +83,7 @@ func buildLargeCatalog(n int) *searchIndex {
 	return idx
 }
 
-func BenchmarkSearch_SingleWord(b *testing.B) {
+func BenchmarkSearch_SingleWord(b *B) {
 	idx := buildLargeCatalog(200)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -93,7 +93,7 @@ func BenchmarkSearch_SingleWord(b *testing.B) {
 	}
 }
 
-func BenchmarkSearch_MultiWord(b *testing.B) {
+func BenchmarkSearch_MultiWord(b *B) {
 	idx := buildLargeCatalog(200)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -103,7 +103,7 @@ func BenchmarkSearch_MultiWord(b *testing.B) {
 	}
 }
 
-func BenchmarkSearch_NoResults(b *testing.B) {
+func BenchmarkSearch_NoResults(b *B) {
 	idx := buildLargeCatalog(200)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -113,7 +113,7 @@ func BenchmarkSearch_NoResults(b *testing.B) {
 	}
 }
 
-func BenchmarkSearch_PartialMatch(b *testing.B) {
+func BenchmarkSearch_PartialMatch(b *B) {
 	idx := buildLargeCatalog(200)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -123,7 +123,7 @@ func BenchmarkSearch_PartialMatch(b *testing.B) {
 	}
 }
 
-func BenchmarkSearch_LargeCatalog500(b *testing.B) {
+func BenchmarkSearch_LargeCatalog500(b *B) {
 	idx := buildLargeCatalog(500)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -133,7 +133,7 @@ func BenchmarkSearch_LargeCatalog500(b *testing.B) {
 	}
 }
 
-func BenchmarkSearch_LargeCatalog1000(b *testing.B) {
+func BenchmarkSearch_LargeCatalog1000(b *B) {
 	idx := buildLargeCatalog(1000)
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -143,7 +143,7 @@ func BenchmarkSearch_LargeCatalog1000(b *testing.B) {
 	}
 }
 
-func BenchmarkSearchIndex_Add(b *testing.B) {
+func BenchmarkSearchIndex_Add(b *B) {
 	// Benchmark the indexing/add path
 	topic := &Topic{
 		ID:      "bench-topic",
@@ -165,7 +165,7 @@ func BenchmarkSearchIndex_Add(b *testing.B) {
 	}
 }
 
-func BenchmarkTokenize(b *testing.B) {
+func BenchmarkTokenize(b *B) {
 	text := "The quick brown fox jumps over the lazy dog. Configuration and deployment are covered in detail."
 	b.ReportAllocs()
 	b.ResetTimer()
