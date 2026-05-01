@@ -2,9 +2,7 @@
 package help
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
+	core "dappco.re/go"
 )
 
 // searchIndexEntry represents a single topic in the client-side search index.
@@ -28,9 +26,9 @@ func Generate(catalog *Catalog, outputDir string) error {
 	topics := catalog.List()
 
 	// Ensure output directories exist.
-	topicsDir := filepath.Join(outputDir, "topics")
-	if err := os.MkdirAll(topicsDir, 0o755); err != nil {
-		return err
+	topicsDir := core.PathJoin(outputDir, "topics")
+	if r := core.MkdirAll(topicsDir, 0o755); !r.OK {
+		return r.Value.(error)
 	}
 
 	// 1. index.html
@@ -65,8 +63,11 @@ func Generate(catalog *Catalog, outputDir string) error {
 
 // writeFile writes content to a file in the given directory.
 func writeFile(dir, filename, content string) error {
-	path := filepath.Join(dir, filename)
-	return os.WriteFile(path, []byte(content), 0o644)
+	path := core.PathJoin(dir, filename)
+	if r := core.WriteFile(path, []byte(content), 0o644); !r.OK {
+		return r.Value.(error)
+	}
+	return nil
 }
 
 // writeSearchIndex writes the JSON search index for client-side search.
@@ -87,16 +88,17 @@ func writeSearchIndex(outputDir string, topics []*Topic) error {
 		})
 	}
 
-	path := filepath.Join(outputDir, "search-index.json")
-	f, err := os.Create(path)
-	if err != nil {
-		return err
+	path := core.PathJoin(outputDir, "search-index.json")
+	r := core.JSONMarshalIndent(entries, "", "  ")
+	if !r.OK {
+		return r.Value.(error)
 	}
-	defer f.Close()
-
-	enc := json.NewEncoder(f)
-	enc.SetIndent("", "  ")
-	return enc.Encode(entries)
+	// Append newline to match json.Encoder.Encode trailing-newline behaviour.
+	data := append(r.Value.([]byte), '\n')
+	if r := core.WriteFile(path, data, 0o644); !r.OK {
+		return r.Value.(error)
+	}
+	return nil
 }
 
 // clientSearchScript is the inline JS for static-site client-side search.
