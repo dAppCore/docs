@@ -2,9 +2,9 @@
 package help
 
 import (
-	"fmt"
 	"html"
-	"strings"
+
+	core "dappco.re/go"
 )
 
 // pageCSS is the shared dark-theme stylesheet embedded in every page.
@@ -155,7 +155,7 @@ li { margin: 0.25rem 0; }
 
 // wrapPage wraps semantic page regions in a complete HTML document.
 func wrapPage(title string, body string) string {
-	return fmt.Sprintf(
+	return core.Sprintf(
 		`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`+
 			`<meta name="viewport" content="width=device-width, initial-scale=1.0">`+
 			`<title>%s</title><style>%s</style></head><body>`,
@@ -183,7 +183,7 @@ func renderHLCF(title, header, sidebar, content, footer string) string {
 // headerNav returns the HLCRF Header node: nav bar with brand + search form.
 func headerNav(searchValue string) string {
 	escapedValue := html.EscapeString(searchValue)
-	return fmt.Sprintf(
+	return core.Sprintf(
 		`<nav><div class="container">`+
 			`<a href="/" class="brand">core.help</a>`+
 			`<form class="search-form" action="/search" method="get">`+
@@ -208,16 +208,16 @@ func sidebarTopicTree(topics []*Topic) string {
 	}
 
 	groups := groupTopicsByTag(topics)
-	var b strings.Builder
+	var b core.Builder
 	b.WriteString(`<div class="sidebar-nav">`)
 	b.WriteString(`<h3>Topics</h3>`)
 
 	for _, g := range groups {
 		b.WriteString(`<div class="sidebar-group">`)
-		b.WriteString(fmt.Sprintf(`<div class="sidebar-group-title">%s</div>`, html.EscapeString(g.Tag)))
+		b.WriteString(core.Sprintf(`<div class="sidebar-group-title">%s</div>`, html.EscapeString(g.Tag)))
 		b.WriteString(`<ul>`)
 		for _, t := range g.Topics {
-			b.WriteString(fmt.Sprintf(
+			b.WriteString(core.Sprintf(
 				`<li><a href="/topics/%s">%s</a></li>`,
 				html.EscapeString(t.ID),
 				html.EscapeString(t.Title),
@@ -237,11 +237,11 @@ func topicTableOfContents(sections []Section) string {
 		return ""
 	}
 
-	var b strings.Builder
+	var b core.Builder
 	b.WriteString(`<div class="toc"><h3>On this page</h3><ul>`)
 	for _, s := range sections {
 		indent := (s.Level - 1) * 12
-		b.WriteString(fmt.Sprintf(
+		b.WriteString(core.Sprintf(
 			`<li style="padding-left: %dpx;"><a href="#%s">%s</a></li>`,
 			indent,
 			html.EscapeString(s.ID),
@@ -254,16 +254,16 @@ func topicTableOfContents(sections []Section) string {
 
 // truncateContent returns a plain-text preview of markdown content.
 func truncateContent(content string, maxLen int) string {
-	lines := strings.Split(content, "\n")
+	lines := core.Split(content, "\n")
 	var clean []string
 	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+		trimmed := core.Trim(line)
+		if trimmed == "" || core.HasPrefix(trimmed, "#") {
 			continue
 		}
 		clean = append(clean, trimmed)
 	}
-	text := strings.Join(clean, " ")
+	text := core.Join(" ", clean...)
 	runes := []rune(text)
 	if len(runes) <= maxLen {
 		return text
@@ -273,7 +273,7 @@ func truncateContent(content string, maxLen int) string {
 
 // RenderIndexPage renders a full HTML page listing topics grouped by tag.
 func RenderIndexPage(topics []*Topic) string {
-	var content strings.Builder
+	var content core.Builder
 	content.WriteString(`<div class="container">`)
 
 	count := len(topics)
@@ -281,7 +281,7 @@ func RenderIndexPage(topics []*Topic) string {
 	if count == 1 {
 		noun = "topic"
 	}
-	content.WriteString(fmt.Sprintf(
+	content.WriteString(core.Sprintf(
 		`<h1>Help Topics <span class="badge">%d %s</span></h1>`,
 		count, noun,
 	))
@@ -289,13 +289,13 @@ func RenderIndexPage(topics []*Topic) string {
 	if count > 0 {
 		groups := groupTopicsByTag(topics)
 		for _, g := range groups {
-			content.WriteString(fmt.Sprintf(
+			content.WriteString(core.Sprintf(
 				`<h2><span class="tag">%s</span></h2>`,
 				html.EscapeString(g.Tag),
 			))
 			for _, t := range g.Topics {
 				content.WriteString(`<div class="card">`)
-				content.WriteString(fmt.Sprintf(
+				content.WriteString(core.Sprintf(
 					`<h3><a href="/topics/%s">%s</a></h3>`,
 					html.EscapeString(t.ID),
 					html.EscapeString(t.Title),
@@ -303,7 +303,7 @@ func RenderIndexPage(topics []*Topic) string {
 				if len(t.Tags) > 0 {
 					content.WriteString(`<div>`)
 					for _, tag := range t.Tags {
-						content.WriteString(fmt.Sprintf(
+						content.WriteString(core.Sprintf(
 							`<span class="tag">%s</span>`,
 							html.EscapeString(tag),
 						))
@@ -311,7 +311,7 @@ func RenderIndexPage(topics []*Topic) string {
 					content.WriteString(`</div>`)
 				}
 				if t.Content != "" {
-					content.WriteString(fmt.Sprintf(
+					content.WriteString(core.Sprintf(
 						`<p>%s</p>`,
 						html.EscapeString(truncateContent(t.Content, 120)),
 					))
@@ -332,14 +332,14 @@ func RenderIndexPage(topics []*Topic) string {
 func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 	hasSidebar := len(sidebar) > 0
 
-	var content strings.Builder
+	var content core.Builder
 	content.WriteString(`<div class="container">`)
 
 	// Tags
 	if len(topic.Tags) > 0 {
 		content.WriteString(`<div style="margin-bottom: 1rem;">`)
 		for _, tag := range topic.Tags {
-			content.WriteString(fmt.Sprintf(
+			content.WriteString(core.Sprintf(
 				`<span class="tag">%s</span>`,
 				html.EscapeString(tag),
 			))
@@ -367,7 +367,7 @@ func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 		content.WriteString(`<h3 style="font-size: 0.85rem; color: var(--fg-muted);">Related</h3>`)
 		content.WriteString(`<ul style="list-style: none; padding-left: 0; font-size: 0.8rem;">`)
 		for _, rel := range topic.Related {
-			content.WriteString(fmt.Sprintf(
+			content.WriteString(core.Sprintf(
 				`<li style="margin: 0.3rem 0;"><a href="/topics/%s">%s</a></li>`,
 				html.EscapeString(rel),
 				html.EscapeString(rel),
@@ -387,7 +387,7 @@ func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 
 // RenderSearchPage renders a full HTML page showing search results.
 func RenderSearchPage(query string, results []*SearchResult) string {
-	var content strings.Builder
+	var content core.Builder
 	content.WriteString(`<div class="container">`)
 	content.WriteString(`<h1>Search Results</h1>`)
 
@@ -397,26 +397,26 @@ func RenderSearchPage(query string, results []*SearchResult) string {
 		if len(results) == 1 {
 			noun = "result"
 		}
-		content.WriteString(fmt.Sprintf(
+		content.WriteString(core.Sprintf(
 			`<p style="color: var(--fg-muted);">Found %d %s for &ldquo;%s&rdquo;</p>`,
 			len(results), noun, escapedQuery,
 		))
 
 		for _, r := range results {
 			content.WriteString(`<div class="card">`)
-			content.WriteString(fmt.Sprintf(
+			content.WriteString(core.Sprintf(
 				`<h3><a href="/topics/%s">%s</a> <span class="badge">%.1f</span></h3>`,
 				html.EscapeString(r.Topic.ID),
 				html.EscapeString(r.Topic.Title),
 				r.Score,
 			))
 			if r.Snippet != "" {
-				content.WriteString(fmt.Sprintf(`<p>%s</p>`, r.Snippet))
+				content.WriteString(core.Sprintf(`<p>%s</p>`, r.Snippet))
 			}
 			if len(r.Topic.Tags) > 0 {
 				content.WriteString(`<div>`)
 				for _, tag := range r.Topic.Tags {
-					content.WriteString(fmt.Sprintf(
+					content.WriteString(core.Sprintf(
 						`<span class="tag">%s</span>`,
 						html.EscapeString(tag),
 					))
@@ -426,7 +426,7 @@ func RenderSearchPage(query string, results []*SearchResult) string {
 			content.WriteString(`</div>`)
 		}
 	} else {
-		content.WriteString(fmt.Sprintf(
+		content.WriteString(core.Sprintf(
 			`<p style="color: var(--fg-muted);">No results for &ldquo;%s&rdquo;</p>`,
 			escapedQuery,
 		))
