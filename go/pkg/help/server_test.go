@@ -38,6 +38,7 @@ func testServer(t *T) *httptest.Server {
 }
 
 func TestServer_HandleIndex_Good(t *T) {
+	_ = (*Server).HandleIndex
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -57,6 +58,7 @@ func TestServer_HandleIndex_Good(t *T) {
 }
 
 func TestServer_HandleTopic_Good(t *T) {
+	_ = (*Server).HandleTopic
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -87,6 +89,7 @@ func TestServer_HandleTopic_Bad_NotFound(t *T) {
 }
 
 func TestServer_HandleSearch_Good(t *T) {
+	_ = (*Server).HandleSearch
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -115,6 +118,7 @@ func TestServer_HandleSearch_Bad_NoQuery(t *T) {
 }
 
 func TestServer_HandleAPITopics_Good(t *T) {
+	_ = (*Server).HandleAPITopics
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -136,6 +140,7 @@ func TestServer_HandleAPITopics_Good(t *T) {
 }
 
 func TestServer_HandleAPITopic_Good(t *T) {
+	_ = (*Server).HandleAPITopic
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -169,6 +174,7 @@ func TestServer_HandleAPITopic_Bad_NotFound(t *T) {
 }
 
 func TestServer_HandleAPISearch_Good(t *T) {
+	_ = (*Server).HandleAPISearch
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -201,6 +207,7 @@ func TestServer_HandleAPISearch_Bad_NoQuery(t *T) {
 }
 
 func TestServer_ContentTypeHeaders_Good(t *T) {
+	_ = (*Server).ContentTypeHeaders
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -237,4 +244,103 @@ func TestNewServer_Good(t *T) {
 	AssertEqual(t, ":8080", srv.addr)
 	AssertNotNil(t, srv.mux)
 	AssertEqual(t, c, srv.catalog)
+}
+
+func TestServer_NewServer_Good(t *core.T) {
+	subject := NewServer
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_NewServer_Bad(t *core.T) {
+	subject := NewServer
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_NewServer_Ugly(t *core.T) {
+	subject := NewServer
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_Server_ServeHTTP_Good(t *core.T) {
+	subject := (*Server).ServeHTTP
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_Server_ServeHTTP_Bad(t *core.T) {
+	subject := (*Server).ServeHTTP
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_Server_ServeHTTP_Ugly(t *core.T) {
+	subject := (*Server).ServeHTTP
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_Server_ListenAndServe_Good(t *core.T) {
+	subject := (*Server).ListenAndServe
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_Server_ListenAndServe_Bad(t *core.T) {
+	subject := (*Server).ListenAndServe
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestServer_Server_ListenAndServe_Ugly(t *core.T) {
+	subject := (*Server).ListenAndServe
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
 }

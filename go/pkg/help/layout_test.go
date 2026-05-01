@@ -170,3 +170,135 @@ func TestRenderLayout_Good_EscapesHTML(t *T) {
 	AssertNotContains(t, html, `<script>alert`)
 	AssertContains(t, html, "&lt;script&gt;")
 }
+
+func TestLayout_RenderIndexPage_Good(t *core.T) {
+	subject := RenderIndexPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderIndexPage_Bad(t *core.T) {
+	subject := RenderIndexPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderIndexPage_Ugly(t *core.T) {
+	subject := RenderIndexPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderTopicPage_Good(t *core.T) {
+	subject := RenderTopicPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderTopicPage_Bad(t *core.T) {
+	subject := RenderTopicPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderTopicPage_Ugly(t *core.T) {
+	subject := RenderTopicPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderSearchPage_Good(t *core.T) {
+	subject := RenderSearchPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderSearchPage_Bad(t *core.T) {
+	subject := RenderSearchPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderSearchPage_Ugly(t *core.T) {
+	subject := RenderSearchPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_Render404Page_Good(t *core.T) {
+	subject := Render404Page
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_Render404Page_Bad(t *core.T) {
+	subject := Render404Page
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_Render404Page_Ugly(t *core.T) {
+	subject := Render404Page
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}

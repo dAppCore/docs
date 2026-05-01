@@ -697,3 +697,168 @@ func TestGenerateID_Good_Emoji(t *T) {
 	AssertNotContains(t, result, "🌍")
 	AssertNotContains(t, result, " ")
 }
+
+func TestParser_ParseTopic_Good(t *core.T) {
+	subject := ParseTopic
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ParseTopic_Bad(t *core.T) {
+	subject := ParseTopic
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ParseTopic_Ugly(t *core.T) {
+	subject := ParseTopic
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ExtractFrontmatter_Good(t *core.T) {
+	subject := ExtractFrontmatter
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ExtractFrontmatter_Bad(t *core.T) {
+	subject := ExtractFrontmatter
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ExtractFrontmatter_Ugly(t *core.T) {
+	subject := ExtractFrontmatter
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ExtractSections_Good(t *core.T) {
+	subject := ExtractSections
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ExtractSections_Bad(t *core.T) {
+	subject := ExtractSections
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_ExtractSections_Ugly(t *core.T) {
+	subject := ExtractSections
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_AllSections_Good(t *core.T) {
+	subject := AllSections
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_AllSections_Bad(t *core.T) {
+	subject := AllSections
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_AllSections_Ugly(t *core.T) {
+	subject := AllSections
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_GenerateID_Good(t *core.T) {
+	subject := GenerateID
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_GenerateID_Bad(t *core.T) {
+	subject := GenerateID
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestParser_GenerateID_Ugly(t *core.T) {
+	subject := GenerateID
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}

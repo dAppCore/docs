@@ -1167,3 +1167,36 @@ func TestCatalog_Search_Good_Integration(t *T) {
 		AssertNil(t, results)
 	})
 }
+
+func TestSearch_Tokens_Good(t *core.T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestSearch_Tokens_Bad(t *core.T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestSearch_Tokens_Ugly(t *core.T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}

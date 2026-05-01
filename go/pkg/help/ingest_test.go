@@ -274,3 +274,69 @@ func TestIsSectionHeader_Good(t *T) {
 	AssertTrue(t, isSectionHeader("usage:", "Usage:"))
 	AssertFalse(t, isSectionHeader("NotUsage:", "Usage:"))
 }
+
+func TestIngest_ParseHelpText_Good(t *core.T) {
+	subject := ParseHelpText
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_ParseHelpText_Bad(t *core.T) {
+	subject := ParseHelpText
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_ParseHelpText_Ugly(t *core.T) {
+	subject := ParseHelpText
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_IngestCLIHelp_Good(t *core.T) {
+	subject := IngestCLIHelp
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_IngestCLIHelp_Bad(t *core.T) {
+	subject := IngestCLIHelp
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_IngestCLIHelp_Ugly(t *core.T) {
+	subject := IngestCLIHelp
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}

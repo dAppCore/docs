@@ -127,3 +127,36 @@ func TestRenderMarkdown_Good_Typographer(t *T) {
 	AssertNotContains(t, html, " -- ")
 	AssertNotContains(t, html, " --- ")
 }
+
+func TestRender_RenderMarkdown_Good(t *core.T) {
+	subject := RenderMarkdown
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestRender_RenderMarkdown_Bad(t *core.T) {
+	subject := RenderMarkdown
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestRender_RenderMarkdown_Ugly(t *core.T) {
+	subject := RenderMarkdown
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}

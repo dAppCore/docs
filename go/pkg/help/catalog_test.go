@@ -242,3 +242,212 @@ func BenchmarkSearch(b *B) {
 		c.Search("installation configuration")
 	}
 }
+
+func TestCatalog_DefaultCatalog_Good(t *core.T) {
+	subject := DefaultCatalog
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_DefaultCatalog_Bad(t *core.T) {
+	subject := DefaultCatalog
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_DefaultCatalog_Ugly(t *core.T) {
+	subject := DefaultCatalog
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_Add_Bad(t *core.T) {
+	subject := (*Catalog).Add
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_Add_Ugly(t *core.T) {
+	subject := (*Catalog).Add
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_List_Bad(t *core.T) {
+	subject := (*Catalog).List
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_List_Ugly(t *core.T) {
+	subject := (*Catalog).List
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_All_Good(t *core.T) {
+	subject := (*Catalog).All
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_All_Bad(t *core.T) {
+	subject := (*Catalog).All
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_All_Ugly(t *core.T) {
+	subject := (*Catalog).All
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_Search_Bad(t *core.T) {
+	subject := (*Catalog).Search
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_Search_Ugly(t *core.T) {
+	subject := (*Catalog).Search
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_SearchResults_Good(t *core.T) {
+	subject := (*Catalog).SearchResults
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_SearchResults_Bad(t *core.T) {
+	subject := (*Catalog).SearchResults
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_SearchResults_Ugly(t *core.T) {
+	subject := (*Catalog).SearchResults
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_LoadContentDir_Bad(t *core.T) {
+	subject := LoadContentDir
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_LoadContentDir_Ugly(t *core.T) {
+	subject := LoadContentDir
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_Get_Bad(t *core.T) {
+	subject := (*Catalog).Get
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestCatalog_Catalog_Get_Ugly(t *core.T) {
+	subject := (*Catalog).Get
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}

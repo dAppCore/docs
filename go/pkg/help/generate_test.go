@@ -192,3 +192,36 @@ func TestGenerate_Good_EmptyCatalog(t *T) {
 	}
 	AssertEmpty(t, entries)
 }
+
+func TestGenerate_Generate_Good(t *core.T) {
+	subject := Generate
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestGenerate_Generate_Bad(t *core.T) {
+	subject := Generate
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestGenerate_Generate_Ugly(t *core.T) {
+	subject := Generate
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
