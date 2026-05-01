@@ -2,8 +2,17 @@
 package help
 
 import (
-	"strings"
+	core "dappco.re/go"
 )
+
+// cutPrefix is equivalent of strings.CutPrefix without importing strings;
+// no core wrapper exists in dappco.re/go.
+func cutPrefix(s, prefix string) (after string, found bool) {
+	if !core.HasPrefix(s, prefix) {
+		return s, false
+	}
+	return s[len(prefix):], true
+}
 
 // ParseHelpText parses standard Go CLI help output into a Topic.
 //
@@ -23,9 +32,9 @@ func ParseHelpText(name string, text string) *Topic {
 
 	// Derive tags: "cli" + first word of the command name.
 	tags := []string{"cli"}
-	parts := strings.Fields(name)
+	parts := fields(name)
 	if len(parts) > 0 {
-		first := strings.ToLower(parts[0])
+		first := core.Lower(parts[0])
 		if first != "cli" { // avoid duplicate
 			tags = append(tags, first)
 		}
@@ -61,13 +70,13 @@ func IngestCLIHelp(helpTexts map[string]string) *Catalog {
 
 // titleCaseWords converts "dev commit" to "Dev Commit".
 func titleCaseWords(name string) string {
-	words := strings.Fields(name)
+	words := fields(name)
 	for i, word := range words {
 		if len(word) > 0 {
-			words[i] = strings.ToUpper(word[:1]) + word[1:]
+			words[i] = core.Upper(word[:1]) + word[1:]
 		}
 	}
-	return strings.Join(words, " ")
+	return core.Join(" ", words...)
 }
 
 // extractSeeAlso extracts related topic references from "See also:" lines.
@@ -76,12 +85,12 @@ func extractSeeAlso(text string) ([]string, string) {
 	var related []string
 	var cleanedLines []string
 
-	lines := strings.SplitSeq(text, "\n")
-	for line := range lines {
-		trimmed := strings.TrimSpace(line)
-		lower := strings.ToLower(trimmed)
+	lines := core.Split(text, "\n")
+	for _, line := range lines {
+		trimmed := core.Trim(line)
+		lower := core.Lower(trimmed)
 
-		if after, ok := strings.CutPrefix(lower, "see also:"); ok {
+		if after, ok := cutPrefix(lower, "see also:"); ok {
 			// Extract references after "See also:"
 			rest := after
 			// The original casing version
@@ -90,9 +99,9 @@ func extractSeeAlso(text string) ([]string, string) {
 				restOrig = rest
 			}
 
-			refs := strings.SplitSeq(restOrig, ",")
-			for ref := range refs {
-				ref = strings.TrimSpace(ref)
+			refs := core.Split(restOrig, ",")
+			for _, ref := range refs {
+				ref = core.Trim(ref)
 				if ref != "" {
 					related = append(related, GenerateID(ref))
 				}
@@ -102,19 +111,19 @@ func extractSeeAlso(text string) ([]string, string) {
 		cleanedLines = append(cleanedLines, line)
 	}
 
-	return related, strings.Join(cleanedLines, "\n")
+	return related, core.Join("\n", cleanedLines...)
 }
 
 // convertHelpToMarkdown converts structured CLI help text to Markdown.
 // It identifies common sections (Usage, Flags, Options, Examples) and
 // wraps them in appropriate Markdown headings and code blocks.
 func convertHelpToMarkdown(text string) string {
-	if strings.TrimSpace(text) == "" {
+	if core.Trim(text) == "" {
 		return ""
 	}
 
-	lines := strings.Split(text, "\n")
-	var result strings.Builder
+	lines := core.Split(text, "\n")
+	var result core.Builder
 	inCodeBlock := false
 	var descLines []string
 
@@ -137,7 +146,7 @@ func convertHelpToMarkdown(text string) string {
 
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
-		trimmed := strings.TrimSpace(line)
+		trimmed := core.Trim(line)
 
 		// Detect section headers
 		switch {
@@ -147,7 +156,7 @@ func convertHelpToMarkdown(text string) string {
 			result.WriteString("## Usage\n\n```\n")
 			inCodeBlock = true
 			// Include the rest of the line after "Usage:" if present
-			rest := strings.TrimSpace(strings.TrimPrefix(trimmed, "Usage:"))
+			rest := core.Trim(core.TrimPrefix(trimmed, "Usage:"))
 			if rest != "" {
 				result.WriteString(rest)
 				result.WriteByte('\n')
@@ -172,17 +181,17 @@ func convertHelpToMarkdown(text string) string {
 			// Parse subsequent indented lines as subcommand list
 			for i+1 < len(lines) {
 				nextLine := lines[i+1]
-				nextTrimmed := strings.TrimSpace(nextLine)
+				nextTrimmed := core.Trim(nextLine)
 				if nextTrimmed == "" {
 					i++
 					continue
 				}
 				// Indented lines are subcommands
-				if strings.HasPrefix(nextLine, "  ") || strings.HasPrefix(nextLine, "\t") {
-					parts := strings.Fields(nextTrimmed)
+				if core.HasPrefix(nextLine, "  ") || core.HasPrefix(nextLine, "\t") {
+					parts := fields(nextTrimmed)
 					if len(parts) >= 2 {
 						cmd := parts[0]
-						desc := strings.Join(parts[1:], " ")
+						desc := core.Join(" ", parts[1:]...)
 						result.WriteString("- **")
 						result.WriteString(cmd)
 						result.WriteString("** -- ")
@@ -203,7 +212,7 @@ func convertHelpToMarkdown(text string) string {
 		default:
 			if inCodeBlock {
 				// Check if this line starts a new section (end code block)
-				if trimmed != "" && !strings.HasPrefix(line, " ") && !strings.HasPrefix(line, "\t") && endsCodeBlockSection(trimmed) {
+				if trimmed != "" && !core.HasPrefix(line, " ") && !core.HasPrefix(line, "\t") && endsCodeBlockSection(trimmed) {
 					closeCodeBlock()
 					// Re-process this line
 					i--
@@ -221,21 +230,21 @@ func convertHelpToMarkdown(text string) string {
 	flushDesc()
 	closeCodeBlock()
 
-	return strings.TrimSpace(result.String())
+	return core.Trim(result.String())
 }
 
 // isSectionHeader checks if a line starts with the given section prefix.
 func isSectionHeader(line, prefix string) bool {
-	return strings.HasPrefix(line, prefix) || strings.HasPrefix(strings.ToLower(line), strings.ToLower(prefix))
+	return core.HasPrefix(line, prefix) || core.HasPrefix(core.Lower(line), core.Lower(prefix))
 }
 
 // endsCodeBlockSection detects if a line indicates a new section that should
 // end an open code block.
 func endsCodeBlockSection(trimmed string) bool {
-	lower := strings.ToLower(trimmed)
+	lower := core.Lower(trimmed)
 	prefixes := []string{"usage:", "flags:", "options:", "examples:", "commands:", "available commands:", "see also:"}
 	for _, p := range prefixes {
-		if strings.HasPrefix(lower, p) {
+		if core.HasPrefix(lower, p) {
 			return true
 		}
 	}
