@@ -1168,7 +1168,7 @@ func TestCatalog_Search_Good_Integration(t *T) {
 	})
 }
 
-func TestSearch_Tokens_Good(t *core.T) {
+func TestSearch_Tokens_Good(t *T) {
 	subject := Tokens
 	if subject == nil {
 		t.FailNow()
@@ -1179,7 +1179,7 @@ func TestSearch_Tokens_Good(t *core.T) {
 	}
 }
 
-func TestSearch_Tokens_Bad(t *core.T) {
+func TestSearch_Tokens_Bad(t *T) {
 	subject := Tokens
 	if subject == nil {
 		t.FailNow()
@@ -1190,7 +1190,7 @@ func TestSearch_Tokens_Bad(t *core.T) {
 	}
 }
 
-func TestSearch_Tokens_Ugly(t *core.T) {
+func TestSearch_Tokens_Ugly(t *T) {
 	subject := Tokens
 	if subject == nil {
 		t.FailNow()

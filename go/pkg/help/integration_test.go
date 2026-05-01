@@ -46,14 +46,15 @@ Registry and git operations for the workspace.
 	}
 
 	// 2. Load into catalog
-	catalog, err := LoadContentDir(contentDir)
-	RequireNoError(t, err)
+	res1 := LoadContentDir(contentDir)
+	if !res1.OK { t.Fatal(res1.Error()) }
+	catalog := res1.Value.(*Catalog)
 	AssertLen(t, catalog.List(), 2)
 
 	// 3. Generate static site
 	outputDir := t.TempDir()
-	err = Generate(catalog, outputDir)
-	RequireNoError(t, err)
+	res2 := Generate(catalog, outputDir)
+	if !res2.OK { t.Fatal(res2.Error()) }
 
 	// 4. Verify file structure
 	AssertNoError(t, statExists(PathJoin(outputDir, "index.html")))

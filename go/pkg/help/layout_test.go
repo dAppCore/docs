@@ -171,7 +171,7 @@ func TestRenderLayout_Good_EscapesHTML(t *T) {
 	AssertContains(t, html, "&lt;script&gt;")
 }
 
-func TestLayout_RenderIndexPage_Good(t *core.T) {
+func TestLayout_RenderIndexPage_Good(t *T) {
 	subject := RenderIndexPage
 	if subject == nil {
 		t.FailNow()
@@ -182,7 +182,7 @@ func TestLayout_RenderIndexPage_Good(t *core.T) {
 	}
 }
 
-func TestLayout_RenderIndexPage_Bad(t *core.T) {
+func TestLayout_RenderIndexPage_Bad(t *T) {
 	subject := RenderIndexPage
 	if subject == nil {
 		t.FailNow()
@@ -193,7 +193,7 @@ func TestLayout_RenderIndexPage_Bad(t *core.T) {
 	}
 }
 
-func TestLayout_RenderIndexPage_Ugly(t *core.T) {
+func TestLayout_RenderIndexPage_Ugly(t *T) {
 	subject := RenderIndexPage
 	if subject == nil {
 		t.FailNow()
@@ -204,7 +204,7 @@ func TestLayout_RenderIndexPage_Ugly(t *core.T) {
 	}
 }
 
-func TestLayout_RenderTopicPage_Good(t *core.T) {
+func TestLayout_RenderTopicPage_Good(t *T) {
 	subject := RenderTopicPage
 	if subject == nil {
 		t.FailNow()
@@ -215,7 +215,7 @@ func TestLayout_RenderTopicPage_Good(t *core.T) {
 	}
 }
 
-func TestLayout_RenderTopicPage_Bad(t *core.T) {
+func TestLayout_RenderTopicPage_Bad(t *T) {
 	subject := RenderTopicPage
 	if subject == nil {
 		t.FailNow()
@@ -226,7 +226,7 @@ func TestLayout_RenderTopicPage_Bad(t *core.T) {
 	}
 }
 
-func TestLayout_RenderTopicPage_Ugly(t *core.T) {
+func TestLayout_RenderTopicPage_Ugly(t *T) {
 	subject := RenderTopicPage
 	if subject == nil {
 		t.FailNow()
@@ -237,7 +237,7 @@ func TestLayout_RenderTopicPage_Ugly(t *core.T) {
 	}
 }
 
-func TestLayout_RenderSearchPage_Good(t *core.T) {
+func TestLayout_RenderSearchPage_Good(t *T) {
 	subject := RenderSearchPage
 	if subject == nil {
 		t.FailNow()
@@ -248,7 +248,7 @@ func TestLayout_RenderSearchPage_Good(t *core.T) {
 	}
 }
 
-func TestLayout_RenderSearchPage_Bad(t *core.T) {
+func TestLayout_RenderSearchPage_Bad(t *T) {
 	subject := RenderSearchPage
 	if subject == nil {
 		t.FailNow()
@@ -259,7 +259,7 @@ func TestLayout_RenderSearchPage_Bad(t *core.T) {
 	}
 }
 
-func TestLayout_RenderSearchPage_Ugly(t *core.T) {
+func TestLayout_RenderSearchPage_Ugly(t *T) {
 	subject := RenderSearchPage
 	if subject == nil {
 		t.FailNow()
@@ -270,7 +270,7 @@ func TestLayout_RenderSearchPage_Ugly(t *core.T) {
 	}
 }
 
-func TestLayout_Render404Page_Good(t *core.T) {
+func TestLayout_Render404Page_Good(t *T) {
 	subject := Render404Page
 	if subject == nil {
 		t.FailNow()
@@ -281,7 +281,7 @@ func TestLayout_Render404Page_Good(t *core.T) {
 	}
 }
 
-func TestLayout_Render404Page_Bad(t *core.T) {
+func TestLayout_Render404Page_Bad(t *T) {
 	subject := Render404Page
 	if subject == nil {
 		t.FailNow()
@@ -292,7 +292,7 @@ func TestLayout_Render404Page_Bad(t *core.T) {
 	}
 }
 
-func TestLayout_Render404Page_Ugly(t *core.T) {
+func TestLayout_Render404Page_Ugly(t *T) {
 	subject := Render404Page
 	if subject == nil {
 		t.FailNow()

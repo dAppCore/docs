@@ -353,9 +353,9 @@ func RenderTopicPage(topic *Topic, sidebar []*Topic) string {
 	}
 
 	// Rendered markdown body
-	rendered, err := RenderMarkdown(topic.Content)
-	if err != nil {
-		rendered = "<p>Error rendering content.</p>"
+	rendered := "<p>Error rendering content.</p>"
+	if r := RenderMarkdown(topic.Content); r.OK {
+		rendered = r.Value.(string)
 	}
 	content.WriteString(`<article class="topic-body">`)
 	content.WriteString(rendered)

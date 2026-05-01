@@ -92,7 +92,7 @@ func (c *Catalog) SearchResults(query string) iter.Seq[*SearchResult] {
 }
 
 // LoadContentDir recursively loads all .md files from a directory into a Catalog.
-func LoadContentDir(dir string) (*Catalog, error) {
+func LoadContentDir(dir string) core.Result {
 	c := &Catalog{
 		topics: make(map[string]*Topic),
 		index:  newSearchIndex(),
@@ -115,26 +115,25 @@ func LoadContentDir(dir string) (*Catalog, error) {
 		}
 		content := r.Value.([]byte)
 
-		topic, err := ParseTopic(path, content)
-		if err != nil {
-			return core.E("catalog.LoadContentDir", core.Sprintf("parsing %s", path), err)
+		topicResult := ParseTopic(path, content)
+		if !topicResult.OK {
+			return core.E("catalog.LoadContentDir", core.Sprintf("parsing %s", path), topicResult.Value.(error))
 		}
 
-		c.Add(topic)
+		c.Add(topicResult.Value.(*Topic))
 		return nil
 	})
 	if err != nil {
-		return nil, core.E("catalog.LoadContentDir", core.Sprintf("walking directory %s", dir), err)
+		return core.Fail(core.E("catalog.LoadContentDir", core.Sprintf("walking directory %s", dir), err))
 	}
-
-	return c, nil
+	return core.Ok(c)
 }
 
 // Get returns a topic by ID.
-func (c *Catalog) Get(id string) (*Topic, error) {
+func (c *Catalog) Get(id string) core.Result {
 	t, ok := c.topics[id]
 	if !ok {
-		return nil, core.E("catalog.Get", core.Sprintf("topic not found: %s", id), nil)
+		return core.Fail(core.E("catalog.Get", core.Sprintf("topic not found: %s", id), nil))
 	}
-	return t, nil
+	return core.Ok(t)
 }

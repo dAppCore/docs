@@ -57,12 +57,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListenAndServe starts the HTTP server.
-func (s *Server) ListenAndServe() error {
+func (s *Server) ListenAndServe() core.Result {
 	srv := &http.Server{
 		Addr:    s.addr,
 		Handler: s.mux,
 	}
-	return srv.ListenAndServe()
+	if err := srv.ListenAndServe(); err != nil {
+		return core.Fail(core.E("help.Server.ListenAndServe", "listen and serve", err))
+	}
+	return core.Ok(nil)
 }
 
 // setSecurityHeaders sets common security headers.
@@ -84,13 +87,14 @@ func (s *Server) handleTopic(w http.ResponseWriter, r *http.Request) {
 	setSecurityHeaders(w)
 	id := r.PathValue("id")
 
-	topic, err := s.catalog.Get(id)
-	if err != nil {
+	res := s.catalog.Get(id)
+	if !res.OK {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write([]byte(Render404Page()))
 		return
 	}
+	topic := res.Value.(*Topic)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, _ = w.Write([]byte(RenderTopicPage(topic, s.catalog.List())))
@@ -125,13 +129,14 @@ func (s *Server) handleAPITopic(w http.ResponseWriter, r *http.Request) {
 	setSecurityHeaders(w)
 	id := r.PathValue("id")
 
-	topic, err := s.catalog.Get(id)
-	if err != nil {
+	res := s.catalog.Get(id)
+	if !res.OK {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		writeJSON(w, map[string]string{"error": "topic not found"})
 		return
 	}
+	topic := res.Value.(*Topic)
 
 	w.Header().Set("Content-Type", "application/json")
 	writeJSON(w, topic)

@@ -53,8 +53,8 @@ func TestGenerate_Good_FileStructure(t *T) {
 	dir := t.TempDir()
 	catalog := testCatalog()
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res1 := Generate(catalog, dir)
+	if !res1.OK { t.Fatal(res1.Error()) }
 
 	// Verify expected file structure
 	expectedFiles := []string{
@@ -76,8 +76,8 @@ func TestGenerate_Good_IndexContainsTopics(t *T) {
 	dir := t.TempDir()
 	catalog := testCatalog()
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res2 := Generate(catalog, dir)
+	if !res2.OK { t.Fatal(res2.Error()) }
 
 	html := string(readFileBytes(t, PathJoin(dir, "index.html")))
 	AssertContains(t, html, "Getting Started")
@@ -88,8 +88,8 @@ func TestGenerate_Good_TopicContainsRenderedMarkdown(t *T) {
 	dir := t.TempDir()
 	catalog := testCatalog()
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res3 := Generate(catalog, dir)
+	if !res3.OK { t.Fatal(res3.Error()) }
 
 	html := string(readFileBytes(t, PathJoin(dir, "topics", "getting-started.html")))
 	AssertContains(t, html, "Getting Started")
@@ -100,8 +100,8 @@ func TestGenerate_Good_SearchIndexJSON(t *T) {
 	dir := t.TempDir()
 	catalog := testCatalog()
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res4 := Generate(catalog, dir)
+	if !res4.OK { t.Fatal(res4.Error()) }
 
 	content := readFileBytes(t, PathJoin(dir, "search-index.json"))
 
@@ -126,8 +126,8 @@ func TestGenerate_Good_404Exists(t *T) {
 	dir := t.TempDir()
 	catalog := testCatalog()
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res5 := Generate(catalog, dir)
+	if !res5.OK { t.Fatal(res5.Error()) }
 
 	html := string(readFileBytes(t, PathJoin(dir, "404.html")))
 	AssertContains(t, html, "404")
@@ -139,8 +139,8 @@ func TestGenerate_Good_EmptyDir(t *T) {
 	catalog := testCatalog()
 
 	// Should succeed in an empty directory
-	err := Generate(catalog, dir)
-	AssertNoError(t, err)
+	res2 := Generate(catalog, dir)
+	AssertTrue(t, res2.OK)
 }
 
 func TestGenerate_Good_OverwriteExisting(t *T) {
@@ -148,12 +148,12 @@ func TestGenerate_Good_OverwriteExisting(t *T) {
 	catalog := testCatalog()
 
 	// Generate once
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res6 := Generate(catalog, dir)
+	if !res6.OK { t.Fatal(res6.Error()) }
 
 	// Generate again -- should overwrite without error
-	err = Generate(catalog, dir)
-	AssertNoError(t, err)
+	res1 := Generate(catalog, dir)
+	AssertTrue(t, res1.OK)
 
 	// Verify files still exist and are valid
 	AssertContains(t, string(readFileBytes(t, PathJoin(dir, "index.html"))), "Getting Started")
@@ -163,8 +163,8 @@ func TestGenerate_Good_SearchPageHasScript(t *T) {
 	dir := t.TempDir()
 	catalog := testCatalog()
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res7 := Generate(catalog, dir)
+	if !res7.OK { t.Fatal(res7.Error()) }
 
 	html := string(readFileBytes(t, PathJoin(dir, "search.html")))
 	AssertContains(t, html, "<script>")
@@ -178,8 +178,8 @@ func TestGenerate_Good_EmptyCatalog(t *T) {
 		index:  newSearchIndex(),
 	}
 
-	err := Generate(catalog, dir)
-	RequireNoError(t, err)
+	res8 := Generate(catalog, dir)
+	if !res8.OK { t.Fatal(res8.Error()) }
 
 	// index.html should still exist
 	AssertNoError(t, statExists(PathJoin(dir, "index.html")))
@@ -193,7 +193,7 @@ func TestGenerate_Good_EmptyCatalog(t *T) {
 	AssertEmpty(t, entries)
 }
 
-func TestGenerate_Generate_Good(t *core.T) {
+func TestGenerate_Generate_Good(t *T) {
 	subject := Generate
 	if subject == nil {
 		t.FailNow()
@@ -204,7 +204,7 @@ func TestGenerate_Generate_Good(t *core.T) {
 	}
 }
 
-func TestGenerate_Generate_Bad(t *core.T) {
+func TestGenerate_Generate_Bad(t *T) {
 	subject := Generate
 	if subject == nil {
 		t.FailNow()
@@ -215,7 +215,7 @@ func TestGenerate_Generate_Bad(t *core.T) {
 	}
 }
 
-func TestGenerate_Generate_Ugly(t *core.T) {
+func TestGenerate_Generate_Ugly(t *T) {
 	subject := Generate
 	if subject == nil {
 		t.FailNow()

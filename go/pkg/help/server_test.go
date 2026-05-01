@@ -37,8 +37,8 @@ func testServer(t *T) *httptest.Server {
 	return httptest.NewServer(srv)
 }
 
-func TestServer_HandleIndex_Good(t *T) {
-	_ = (*Server).HandleIndex
+func TestServer_handleIndex_Good(t *T) {
+	_ = (*Server).handleIndex
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -57,8 +57,8 @@ func TestServer_HandleIndex_Good(t *T) {
 	AssertContains(t, body, "Configuration")
 }
 
-func TestServer_HandleTopic_Good(t *T) {
-	_ = (*Server).HandleTopic
+func TestServer_handleTopic_Good(t *T) {
+	_ = (*Server).handleTopic
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -76,7 +76,7 @@ func TestServer_HandleTopic_Good(t *T) {
 	AssertContains(t, body, "<strong>guide</strong>")
 }
 
-func TestServer_HandleTopic_Bad_NotFound(t *T) {
+func TestServer_handleTopic_Bad_NotFound(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -88,8 +88,8 @@ func TestServer_HandleTopic_Bad_NotFound(t *T) {
 	AssertContains(t, resp.Header.Get("Content-Type"), "text/html")
 }
 
-func TestServer_HandleSearch_Good(t *T) {
-	_ = (*Server).HandleSearch
+func TestServer_handleSearch_Good(t *T) {
+	_ = (*Server).handleSearch
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -106,7 +106,7 @@ func TestServer_HandleSearch_Good(t *T) {
 	AssertContains(t, body, "install")
 }
 
-func TestServer_HandleSearch_Bad_NoQuery(t *T) {
+func TestServer_handleSearch_Bad_NoQuery(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -117,8 +117,8 @@ func TestServer_HandleSearch_Bad_NoQuery(t *T) {
 	AssertEqual(t, http.StatusBadRequest, resp.StatusCode)
 }
 
-func TestServer_HandleAPITopics_Good(t *T) {
-	_ = (*Server).HandleAPITopics
+func TestServer_handleAPITopics_Good(t *T) {
+	_ = (*Server).handleAPITopics
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -139,8 +139,8 @@ func TestServer_HandleAPITopics_Good(t *T) {
 	AssertLen(t, topics, 2)
 }
 
-func TestServer_HandleAPITopic_Good(t *T) {
-	_ = (*Server).HandleAPITopic
+func TestServer_handleAPITopic_Good(t *T) {
+	_ = (*Server).handleAPITopic
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -161,7 +161,7 @@ func TestServer_HandleAPITopic_Good(t *T) {
 	AssertEqual(t, "getting-started", topic.ID)
 }
 
-func TestServer_HandleAPITopic_Bad_NotFound(t *T) {
+func TestServer_handleAPITopic_Bad_NotFound(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -173,8 +173,8 @@ func TestServer_HandleAPITopic_Bad_NotFound(t *T) {
 	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 }
 
-func TestServer_HandleAPISearch_Good(t *T) {
-	_ = (*Server).HandleAPISearch
+func TestServer_handleAPISearch_Good(t *T) {
+	_ = (*Server).handleAPISearch
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -194,7 +194,7 @@ func TestServer_HandleAPISearch_Good(t *T) {
 	AssertNotEmpty(t, results)
 }
 
-func TestServer_HandleAPISearch_Bad_NoQuery(t *T) {
+func TestServer_handleAPISearch_Bad_NoQuery(t *T) {
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -206,8 +206,8 @@ func TestServer_HandleAPISearch_Bad_NoQuery(t *T) {
 	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 }
 
-func TestServer_ContentTypeHeaders_Good(t *T) {
-	_ = (*Server).ContentTypeHeaders
+func TestServer_setSecurityHeaders_Good(t *T) {
+	_ = setSecurityHeaders
 	ts := testServer(t)
 	defer ts.Close()
 
@@ -246,7 +246,7 @@ func TestNewServer_Good(t *T) {
 	AssertEqual(t, c, srv.catalog)
 }
 
-func TestServer_NewServer_Good(t *core.T) {
+func TestServer_NewServer_Good(t *T) {
 	subject := NewServer
 	if subject == nil {
 		t.FailNow()
@@ -257,7 +257,7 @@ func TestServer_NewServer_Good(t *core.T) {
 	}
 }
 
-func TestServer_NewServer_Bad(t *core.T) {
+func TestServer_NewServer_Bad(t *T) {
 	subject := NewServer
 	if subject == nil {
 		t.FailNow()
@@ -268,7 +268,7 @@ func TestServer_NewServer_Bad(t *core.T) {
 	}
 }
 
-func TestServer_NewServer_Ugly(t *core.T) {
+func TestServer_NewServer_Ugly(t *T) {
 	subject := NewServer
 	if subject == nil {
 		t.FailNow()
@@ -279,7 +279,7 @@ func TestServer_NewServer_Ugly(t *core.T) {
 	}
 }
 
-func TestServer_Server_ServeHTTP_Good(t *core.T) {
+func TestServer_Server_ServeHTTP_Good(t *T) {
 	subject := (*Server).ServeHTTP
 	if subject == nil {
 		t.FailNow()
@@ -290,7 +290,7 @@ func TestServer_Server_ServeHTTP_Good(t *core.T) {
 	}
 }
 
-func TestServer_Server_ServeHTTP_Bad(t *core.T) {
+func TestServer_Server_ServeHTTP_Bad(t *T) {
 	subject := (*Server).ServeHTTP
 	if subject == nil {
 		t.FailNow()
@@ -301,7 +301,7 @@ func TestServer_Server_ServeHTTP_Bad(t *core.T) {
 	}
 }
 
-func TestServer_Server_ServeHTTP_Ugly(t *core.T) {
+func TestServer_Server_ServeHTTP_Ugly(t *T) {
 	subject := (*Server).ServeHTTP
 	if subject == nil {
 		t.FailNow()
@@ -312,7 +312,7 @@ func TestServer_Server_ServeHTTP_Ugly(t *core.T) {
 	}
 }
 
-func TestServer_Server_ListenAndServe_Good(t *core.T) {
+func TestServer_Server_ListenAndServe_Good(t *T) {
 	subject := (*Server).ListenAndServe
 	if subject == nil {
 		t.FailNow()
@@ -323,7 +323,7 @@ func TestServer_Server_ListenAndServe_Good(t *core.T) {
 	}
 }
 
-func TestServer_Server_ListenAndServe_Bad(t *core.T) {
+func TestServer_Server_ListenAndServe_Bad(t *T) {
 	subject := (*Server).ListenAndServe
 	if subject == nil {
 		t.FailNow()
@@ -334,7 +334,7 @@ func TestServer_Server_ListenAndServe_Bad(t *core.T) {
 	}
 }
 
-func TestServer_Server_ListenAndServe_Ugly(t *core.T) {
+func TestServer_Server_ListenAndServe_Ugly(t *T) {
 	subject := (*Server).ListenAndServe
 	if subject == nil {
 		t.FailNow()

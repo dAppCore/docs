@@ -75,7 +75,7 @@ var (
 )
 
 // ParseTopic parses a markdown file into a Topic.
-func ParseTopic(path string, content []byte) (*Topic, error) {
+func ParseTopic(path string, content []byte) core.Result {
 	contentStr := string(content)
 
 	topic := &Topic{
@@ -114,7 +114,7 @@ func ParseTopic(path string, content []byte) (*Topic, error) {
 		}
 	}
 
-	return topic, nil
+	return core.Ok(topic)
 }
 
 // ExtractFrontmatter extracts YAML frontmatter from markdown content.

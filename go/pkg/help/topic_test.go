@@ -1,5 +1,9 @@
 package help
 
+import (
+	. "dappco.re/go"
+)
+
 func TestTopic_Topic_Good(t *T) {
 	subject := Topic{}
 	_ = subject
