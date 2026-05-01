@@ -1,7 +1,7 @@
 // SPDX-Licence-Identifier: EUPL-1.2
 package help
 
-import "strings"
+import core "dappco.re/go"
 
 // stem performs lightweight Porter-style suffix stripping on an English word.
 // Words shorter than 4 characters are returned unchanged. The result is
@@ -33,23 +33,23 @@ func stem(word string) string {
 // stemInflectional handles plurals and -ed/-ing verb forms.
 func stemInflectional(s string) string {
 	switch {
-	case strings.HasSuffix(s, "sses"):
+	case core.HasSuffix(s, "sses"):
 		return s[:len(s)-2] // -sses → -ss
-	case strings.HasSuffix(s, "ies"):
+	case core.HasSuffix(s, "ies"):
 		return s[:len(s)-2] // -ies → -i
-	case strings.HasSuffix(s, "eed"):
+	case core.HasSuffix(s, "eed"):
 		return s[:len(s)-1] // -eed → -ee
-	case strings.HasSuffix(s, "ing"):
+	case core.HasSuffix(s, "ing"):
 		r := s[:len(s)-3]
 		if len(r) >= 2 {
 			return r
 		}
-	case strings.HasSuffix(s, "ed"):
+	case core.HasSuffix(s, "ed"):
 		r := s[:len(s)-2]
 		if len(r) >= 2 {
 			return r
 		}
-	case strings.HasSuffix(s, "s") && !strings.HasSuffix(s, "ss"):
+	case core.HasSuffix(s, "s") && !core.HasSuffix(s, "ss"):
 		return s[:len(s)-1] // -s → "" (but not -ss)
 	}
 	return s
@@ -80,7 +80,7 @@ func stemDerivational(s string) string {
 	}
 
 	for _, r := range rules {
-		if strings.HasSuffix(s, r.suffix) {
+		if core.HasSuffix(s, r.suffix) {
 			result := s[:len(s)-len(r.suffix)] + r.replacement
 			if len(result) >= 2 {
 				return result
