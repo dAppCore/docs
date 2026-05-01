@@ -2,8 +2,7 @@
 package help
 
 import (
-	"bytes"
-
+	core "dappco.re/go"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer/html"
@@ -27,7 +26,7 @@ func RenderMarkdown(content string) (string, error) {
 		),
 	)
 
-	var buf bytes.Buffer
+	var buf core.Buffer
 	if err := md.Convert([]byte(content), &buf); err != nil {
 		return "", err
 	}

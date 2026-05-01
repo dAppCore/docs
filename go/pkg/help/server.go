@@ -2,9 +2,24 @@
 package help
 
 import (
-	"encoding/json"
 	"net/http"
+
+	core "dappco.re/go"
 )
+
+// writeJSON marshals v as JSON and writes it to w. If marshalling fails, an
+// HTTP 500 is written. Replaces json.NewEncoder(w).Encode(v) without the
+// streaming-encoder banned import.
+func writeJSON(w http.ResponseWriter, v any) {
+	r := core.JSONMarshal(v)
+	if !r.OK {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if _, err := w.Write(r.Value.([]byte)); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
 
 // Server serves the help catalog over HTTP.
 type Server struct {
@@ -103,9 +118,7 @@ func (s *Server) handleAPITopics(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	topics := s.catalog.List()
 
-	if err := json.NewEncoder(w).Encode(topics); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	writeJSON(w, topics)
 }
 
 func (s *Server) handleAPITopic(w http.ResponseWriter, r *http.Request) {
@@ -116,16 +129,12 @@ func (s *Server) handleAPITopic(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		if err := json.NewEncoder(w).Encode(map[string]string{"error": "topic not found"}); err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-		}
+		writeJSON(w, map[string]string{"error": "topic not found"})
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(topic); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	writeJSON(w, topic)
 }
 
 func (s *Server) handleAPISearch(w http.ResponseWriter, r *http.Request) {
@@ -135,16 +144,12 @@ func (s *Server) handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	if query == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		if err := json.NewEncoder(w).Encode(map[string]string{"error": "missing query parameter 'q'"}); err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-		}
+		writeJSON(w, map[string]string{"error": "missing query parameter 'q'"})
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	results := s.catalog.Search(query)
 
-	if err := json.NewEncoder(w).Encode(results); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	writeJSON(w, results)
 }
