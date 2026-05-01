@@ -1,14 +1,11 @@
 package help
 
 import (
-	"fmt"
-	"io/fs"
 	"iter"
 	"maps"
-	"os"
-	"path/filepath"
 	"slices"
-	"strings"
+
+	core "dappco.re/go"
 )
 
 // Catalog manages help topics.
@@ -101,32 +98,33 @@ func LoadContentDir(dir string) (*Catalog, error) {
 		index:  newSearchIndex(),
 	}
 
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	err := core.PathWalkDir(dir, func(path string, d core.FsDirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(strings.ToLower(d.Name()), ".md") {
+		if !core.HasSuffix(core.Lower(d.Name()), ".md") {
 			return nil
 		}
 
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("catalog.LoadContentDir: reading %s: %w", path, err)
+		r := core.ReadFile(path)
+		if !r.OK {
+			return core.E("catalog.LoadContentDir", core.Sprintf("reading %s", path), r.Value.(error))
 		}
+		content := r.Value.([]byte)
 
 		topic, err := ParseTopic(path, content)
 		if err != nil {
-			return fmt.Errorf("catalog.LoadContentDir: parsing %s: %w", path, err)
+			return core.E("catalog.LoadContentDir", core.Sprintf("parsing %s", path), err)
 		}
 
 		c.Add(topic)
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("catalog.LoadContentDir: walking directory %s: %w", dir, err)
+		return nil, core.E("catalog.LoadContentDir", core.Sprintf("walking directory %s", dir), err)
 	}
 
 	return c, nil
@@ -136,7 +134,7 @@ func LoadContentDir(dir string) (*Catalog, error) {
 func (c *Catalog) Get(id string) (*Topic, error) {
 	t, ok := c.topics[id]
 	if !ok {
-		return nil, fmt.Errorf("catalog.Get: topic not found: %s", id)
+		return nil, core.E("catalog.Get", core.Sprintf("topic not found: %s", id), nil)
 	}
 	return t, nil
 }
