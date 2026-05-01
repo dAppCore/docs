@@ -3,8 +3,6 @@ package help
 
 import (
 	. "dappco.re/go"
-	"fmt"
-	"strings"
 )
 
 func TestGenerateID_Good(t *T) {
@@ -373,7 +371,7 @@ order: 99
 	AssertEqual(t, 99, topic.Order)
 	AssertEmpty(t, topic.Sections)
 	// Body after frontmatter is just a newline
-	AssertEqual(t, "", strings.TrimSpace(topic.Content))
+	AssertEqual(t, "", Trim(topic.Content))
 }
 
 func TestExtractFrontmatter_Bad_MalformedYAML(t *T) {
@@ -478,8 +476,8 @@ Deepest heading level.
 		{5, "Level 5"},
 		{6, "Level 6"},
 	} {
-		AssertEqual(t, expected.level, sections[i].Level, fmt.Sprintf("section %d level", i))
-		AssertEqual(t, expected.title, sections[i].Title, fmt.Sprintf("section %d title", i))
+		AssertEqual(t, expected.level, sections[i].Level, Sprintf("section %d level", i))
+		AssertEqual(t, expected.title, sections[i].Title, Sprintf("section %d title", i))
 	}
 
 	// Verify content is associated with correct sections
@@ -605,21 +603,21 @@ Content with Кириллица, 中文, العربية, and हिन्दी.
 
 func TestParseTopic_Good_VeryLongDocument(t *T) {
 	// Build a document with 10,000+ lines
-	var b strings.Builder
+	var b Builder
 
 	b.WriteString("---\ntitle: Massive Document\ntags: [large, stress]\n---\n\n")
 
 	// Generate 100 sections, each with ~100 lines of content
 	for i := range 100 {
-		b.WriteString(fmt.Sprintf("## Section %d\n\n", i+1))
+		b.WriteString(Sprintf("## Section %d\n\n", i+1))
 		for j := range 100 {
-			b.WriteString(fmt.Sprintf("Line %d of section %d: Lorem ipsum dolor sit amet.\n", j+1, i+1))
+			b.WriteString(Sprintf("Line %d of section %d: Lorem ipsum dolor sit amet.\n", j+1, i+1))
 		}
 		b.WriteString("\n")
 	}
 
 	content := b.String()
-	lineCount := strings.Count(content, "\n")
+	lineCount := countSubstring(content, "\n")
 	AssertGreater(t, lineCount, 10000, "document should exceed 10K lines")
 
 	topic, err := ParseTopic("massive.md", []byte(content))

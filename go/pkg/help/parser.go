@@ -10,6 +10,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// countSubstring returns the number of non-overlapping occurrences of substr
+// in s. Equivalent of strings.Count without importing strings; no core
+// wrapper exists in dappco.re/go.
+func countSubstring(s, substr string) int {
+	if substr == "" {
+		return len(s) + 1
+	}
+	count := 0
+	start := 0
+	for {
+		idx := core.Index(s[start:], substr)
+		if idx < 0 {
+			return count
+		}
+		count++
+		start += idx + len(substr)
+	}
+}
+
 // repeat returns a string consisting of n copies of s. Equivalent of
 // strings.Repeat without importing strings; no core wrapper exists in
 // dappco.re/go.
