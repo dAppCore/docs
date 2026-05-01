@@ -2,9 +2,6 @@ package help
 
 import (
 	. "dappco.re/go"
-	"fmt"
-	"os"
-	"path/filepath"
 )
 
 func TestDefaultCatalog_Good(t *T) {
@@ -177,9 +174,9 @@ func TestCatalog_Search_Good_ScoreTiebreaking(t *T) {
 
 func TestCatalog_LoadContentDir_Good(t *T) {
 	dir := t.TempDir()
-	os.MkdirAll(filepath.Join(dir, "cli"), 0o755)
-	os.WriteFile(filepath.Join(dir, "cli", "dev-work.md"), []byte("---\ntitle: Dev Work\ntags: [cli, dev]\n---\n\n## Usage\n\ncore dev work syncs your workspace.\n"), 0o644)
-	os.WriteFile(filepath.Join(dir, "cli", "setup.md"), []byte("---\ntitle: Setup\ntags: [cli]\n---\n\n## Installation\n\nRun core setup to get started.\n"), 0o644)
+	MkdirAll(PathJoin(dir, "cli"), 0o755)
+	WriteFile(PathJoin(dir, "cli", "dev-work.md"), []byte("---\ntitle: Dev Work\ntags: [cli, dev]\n---\n\n## Usage\n\ncore dev work syncs your workspace.\n"), 0o644)
+	WriteFile(PathJoin(dir, "cli", "setup.md"), []byte("---\ntitle: Setup\ntags: [cli]\n---\n\n## Installation\n\nRun core setup to get started.\n"), 0o644)
 
 	catalog, err := LoadContentDir(dir)
 	RequireNoError(t, err)
@@ -203,8 +200,8 @@ func TestCatalog_LoadContentDir_Good_Empty(t *T) {
 
 func TestCatalog_LoadContentDir_Good_SkipsNonMd(t *T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("not markdown"), 0o644)
-	os.WriteFile(filepath.Join(dir, "topic.md"), []byte("---\ntitle: Topic\n---\n\nContent here.\n"), 0o644)
+	WriteFile(PathJoin(dir, "readme.txt"), []byte("not markdown"), 0o644)
+	WriteFile(PathJoin(dir, "topic.md"), []byte("---\ntitle: Topic\n---\n\nContent here.\n"), 0o644)
 
 	catalog, err := LoadContentDir(dir)
 	RequireNoError(t, err)
@@ -220,18 +217,18 @@ func BenchmarkSearch(b *B) {
 
 	for i := range 150 {
 		c.Add(&Topic{
-			ID:      fmt.Sprintf("topic-%d", i),
-			Title:   fmt.Sprintf("Topic Number %d About Various Subjects", i),
-			Content: fmt.Sprintf("This is the content of topic %d. It covers installation, configuration, deployment, and testing of the system.", i),
-			Tags:    []string{"generated", fmt.Sprintf("tag%d", i%10)},
+			ID:      Sprintf("topic-%d", i),
+			Title:   Sprintf("Topic Number %d About Various Subjects", i),
+			Content: Sprintf("This is the content of topic %d. It covers installation, configuration, deployment, and testing of the system.", i),
+			Tags:    []string{"generated", Sprintf("tag%d", i%10)},
 			Sections: []Section{
 				{
-					ID:      fmt.Sprintf("section-%d-a", i),
+					ID:      Sprintf("section-%d-a", i),
 					Title:   "Overview",
 					Content: "An overview of the topic and its purpose.",
 				},
 				{
-					ID:      fmt.Sprintf("section-%d-b", i),
+					ID:      Sprintf("section-%d-b", i),
 					Title:   "Details",
 					Content: "Detailed information about the topic including examples and usage.",
 				},
