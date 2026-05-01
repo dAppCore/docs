@@ -4,7 +4,6 @@ package help
 import (
 	. "dappco.re/go"
 	"regexp"
-	"strings"
 	"unicode/utf8"
 )
 
@@ -267,7 +266,7 @@ func TestExtractSnippet_Good_UTF8(t *T) {
 
 	t.Run("truncates multi-byte content safely", func(t *T) {
 		// Long content that will be truncated
-		longContent := strings.Repeat("日本語", 100) // 300 characters
+		longContent := repeat("日本語", 100) // 300 characters
 		snippet := extractSnippet(longContent, nil)
 		AssertTrue(t, isValidUTF8(snippet), "Truncated snippet should be valid UTF-8")
 	})
@@ -352,7 +351,7 @@ func TestExtractSnippet_Good_HeadingsOnly(t *T) {
 func TestExtractSnippet_Good_SnippetTrimmedToEmpty(t *T) {
 	// After word-boundary trimming the snippet could become empty.
 	// This exercises the snippet=="" guard after TrimSpace.
-	content := strings.Repeat(" ", 200)
+	content := repeat(" ", 200)
 
 	snippet := extractSnippet(content, compileRegexes([]string{"zz"}))
 	AssertEmpty(t, snippet, "whitespace-only content should yield empty snippet")

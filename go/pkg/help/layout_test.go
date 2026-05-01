@@ -3,7 +3,6 @@ package help
 
 import (
 	. "dappco.re/go"
-	"strings"
 )
 
 func TestRenderLayout_Good_IndexPage(t *T) {
@@ -142,7 +141,7 @@ func TestRenderLayout_Good_HasDoctype(t *T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *T) {
-			RequireTrue(t, strings.HasPrefix(tt.html, "<!DOCTYPE html>"),
+			RequireTrue(t, HasPrefix(tt.html, "<!DOCTYPE html>"),
 				"page should start with <!DOCTYPE html>, got: %s", tt.html[:min(50, len(tt.html))])
 		})
 	}

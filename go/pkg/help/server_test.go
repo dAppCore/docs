@@ -3,7 +3,7 @@ package help
 
 import (
 	. "dappco.re/go"
-	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 )
@@ -127,7 +127,11 @@ func TestServer_HandleAPITopics_Good(t *T) {
 	AssertEqual(t, "nosniff", resp.Header.Get("X-Content-Type-Options"))
 
 	var topics []Topic
-	RequireNoError(t, json.NewDecoder(resp.Body).Decode(&topics))
+	body, err := io.ReadAll(resp.Body)
+	RequireNoError(t, err)
+	if r := JSONUnmarshal(body, &topics); !r.OK {
+		t.Fatal(r.Error())
+	}
 	AssertLen(t, topics, 2)
 }
 
@@ -143,7 +147,11 @@ func TestServer_HandleAPITopic_Good(t *T) {
 	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 
 	var topic Topic
-	RequireNoError(t, json.NewDecoder(resp.Body).Decode(&topic))
+	body, err := io.ReadAll(resp.Body)
+	RequireNoError(t, err)
+	if r := JSONUnmarshal(body, &topic); !r.OK {
+		t.Fatal(r.Error())
+	}
 	AssertEqual(t, "Getting Started", topic.Title)
 	AssertEqual(t, "getting-started", topic.ID)
 }
@@ -172,7 +180,11 @@ func TestServer_HandleAPISearch_Good(t *T) {
 	AssertContains(t, resp.Header.Get("Content-Type"), "application/json")
 
 	var results []SearchResult
-	RequireNoError(t, json.NewDecoder(resp.Body).Decode(&results))
+	body, err := io.ReadAll(resp.Body)
+	RequireNoError(t, err)
+	if r := JSONUnmarshal(body, &results); !r.OK {
+		t.Fatal(r.Error())
+	}
 	AssertNotEmpty(t, results)
 }
 
