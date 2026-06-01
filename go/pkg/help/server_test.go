@@ -246,6 +246,58 @@ func TestNewServer_Good(t *T) {
 	AssertEqual(t, c, srv.catalog)
 }
 
+// failingResponseWriter is an http.ResponseWriter whose Write always errors,
+// used to drive writeJSON's write-failure branch.
+type failingResponseWriter struct {
+	header http.Header
+	status int
+}
+
+func (f *failingResponseWriter) Header() http.Header {
+	if f.header == nil {
+		f.header = make(http.Header)
+	}
+	return f.header
+}
+
+func (f *failingResponseWriter) Write([]byte) (int, error) {
+	return 0, io.ErrClosedPipe
+}
+
+func (f *failingResponseWriter) WriteHeader(status int) {
+	f.status = status
+}
+
+func TestServer_writeJSON_Good(t *T) {
+	rec := httptest.NewRecorder()
+	writeJSON(rec, map[string]string{"hello": "world"})
+
+	AssertEqual(t, http.StatusOK, rec.Code)
+	var got map[string]string
+	if r := JSONUnmarshal(rec.Body.Bytes(), &got); !r.OK {
+		t.Fatal(r.Error())
+	}
+	AssertEqual(t, "world", got["hello"])
+}
+
+func TestServer_writeJSON_Bad_MarshalFails(t *T) {
+	// A channel cannot be marshalled to JSON, forcing the 500 branch.
+	rec := httptest.NewRecorder()
+	writeJSON(rec, make(chan int))
+
+	AssertEqual(t, http.StatusInternalServerError, rec.Code)
+	AssertContains(t, rec.Body.String(), "Internal server error")
+}
+
+func TestServer_writeJSON_Ugly_WriteFails(t *T) {
+	// The body marshals fine, but the writer rejects the write; writeJSON
+	// must respond with a 500 via http.Error rather than panicking.
+	w := &failingResponseWriter{}
+	writeJSON(w, map[string]string{"ok": "value"})
+
+	AssertEqual(t, http.StatusInternalServerError, w.status)
+}
+
 func TestServer_NewServer_Good(t *T) {
 	subject := NewServer
 	if subject == nil {

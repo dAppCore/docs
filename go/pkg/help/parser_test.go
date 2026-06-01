@@ -714,6 +714,52 @@ func TestGenerateID_Good_Emoji(t *T) {
 	AssertNotContains(t, result, " ")
 }
 
+func TestRepeat_Good(t *T) {
+	t.Run("repeats n times", func(t *T) {
+		AssertEqual(t, "ababab", repeat("ab", 3))
+	})
+	t.Run("single copy", func(t *T) {
+		AssertEqual(t, "x", repeat("x", 1))
+	})
+}
+
+func TestRepeat_Bad_NonPositiveCount(t *T) {
+	// n <= 0 must return the empty string without allocating.
+	AssertEqual(t, "", repeat("ab", 0))
+	AssertEqual(t, "", repeat("ab", -1))
+	AssertEqual(t, "", repeat("ab", -100))
+}
+
+func TestCountSubstring_Good(t *T) {
+	t.Run("counts non-overlapping occurrences", func(t *T) {
+		AssertEqual(t, 3, countSubstring("ababab", "ab"))
+	})
+	t.Run("no occurrence", func(t *T) {
+		AssertEqual(t, 0, countSubstring("abc", "z"))
+	})
+	t.Run("overlapping counted non-overlapping", func(t *T) {
+		AssertEqual(t, 2, countSubstring("aaaa", "aa"))
+	})
+}
+
+func TestCountSubstring_Ugly_EmptySubstr(t *T) {
+	// An empty substr returns len(s)+1, matching strings.Count semantics.
+	AssertEqual(t, 1, countSubstring("", ""))
+	AssertEqual(t, 4, countSubstring("abc", ""))
+}
+
+func TestFields_Good(t *T) {
+	t.Run("splits on whitespace runs", func(t *T) {
+		AssertEqual(t, []string{"a", "b", "c"}, fields("  a   b\tc  "))
+	})
+	t.Run("empty string yields nil", func(t *T) {
+		AssertNil(t, fields(""))
+	})
+	t.Run("only whitespace yields nil", func(t *T) {
+		AssertNil(t, fields("   \t\n  "))
+	})
+}
+
 func TestParser_ParseTopic_Good(t *T) {
 	subject := ParseTopic
 	if subject == nil {

@@ -193,6 +193,104 @@ func TestGenerate_Good_EmptyCatalog(t *T) {
 	AssertEmpty(t, entries)
 }
 
+func TestGenerate_Bad_MkdirFails(t *T) {
+	// outputDir lives UNDER an existing regular file, so MkdirAll of the
+	// "topics" subdir cannot succeed.
+	dir := t.TempDir()
+	filePath := PathJoin(dir, "blocker")
+	if r := WriteFile(filePath, []byte("not a directory"), 0o644); !r.OK {
+		t.Fatal(r.Error())
+	}
+
+	catalog := testCatalog()
+	res := Generate(catalog, PathJoin(filePath, "site"))
+	AssertFalse(t, res.OK, "Generate must fail when the output dir cannot be created")
+}
+
+func TestGenerate_Bad_WriteFileFails(t *T) {
+	// outputDir itself is an existing regular file: MkdirAll(topics) under it
+	// fails, surfacing the first error result.
+	dir := t.TempDir()
+	filePath := PathJoin(dir, "regular-file")
+	if r := WriteFile(filePath, []byte("x"), 0o644); !r.OK {
+		t.Fatal(r.Error())
+	}
+
+	catalog := testCatalog()
+	res := Generate(catalog, filePath)
+	AssertFalse(t, res.OK, "Generate must fail when outputDir is a regular file")
+}
+
+func TestGenerate_Bad_IndexWriteFails(t *T) {
+	// "topics" dir creation succeeds, but index.html already exists as a
+	// directory so writing the index page fails.
+	dir := t.TempDir()
+	if r := MkdirAll(PathJoin(dir, "index.html"), 0o755); !r.OK {
+		t.Fatal(r.Error())
+	}
+
+	res := Generate(testCatalog(), dir)
+	AssertFalse(t, res.OK, "Generate must fail when index.html cannot be written")
+}
+
+func TestGenerate_Bad_TopicWriteFails(t *T) {
+	// index.html writes fine, but a topic target path is occupied by a
+	// directory so the per-topic writeFile fails.
+	dir := t.TempDir()
+	c := &Catalog{
+		topics: make(map[string]*Topic),
+		index:  newSearchIndex(),
+	}
+	c.Add(&Topic{ID: "blocked", Title: "Blocked", Content: "x"})
+	// topics/blocked.html occupied by a directory.
+	if r := MkdirAll(PathJoin(dir, "topics", "blocked.html"), 0o755); !r.OK {
+		t.Fatal(r.Error())
+	}
+
+	res := Generate(c, dir)
+	AssertFalse(t, res.OK, "Generate must fail when a topic page cannot be written")
+}
+
+func TestGenerate_Bad_SearchIndexWriteFails(t *T) {
+	// All HTML writes succeed, but search-index.json is occupied by a
+	// directory so writeSearchIndex fails.
+	dir := t.TempDir()
+	if r := MkdirAll(PathJoin(dir, "search-index.json"), 0o755); !r.OK {
+		t.Fatal(r.Error())
+	}
+
+	res := Generate(testCatalog(), dir)
+	AssertFalse(t, res.OK, "Generate must fail when the search index cannot be written")
+}
+
+func TestGenerate_Good_TruncatesLongContentInSearchIndex(t *T) {
+	// writeSearchIndex truncates topic content to 500 runes; exercise the
+	// >500 branch and confirm the JSON entry is clipped.
+	dir := t.TempDir()
+	c := &Catalog{
+		topics: make(map[string]*Topic),
+		index:  newSearchIndex(),
+	}
+	long := ""
+	for range 600 {
+		long += "x"
+	}
+	c.Add(&Topic{ID: "long", Title: "Long", Content: long})
+
+	res := Generate(c, dir)
+	if !res.OK {
+		t.Fatal(res.Error())
+	}
+
+	content := readFileBytes(t, PathJoin(dir, "search-index.json"))
+	var entries []searchIndexEntry
+	if r := JSONUnmarshal(content, &entries); !r.OK {
+		t.Fatal(r.Error())
+	}
+	AssertLen(t, entries, 1)
+	AssertLen(t, []rune(entries[0].Content), 500, "long content must be truncated to 500 runes")
+}
+
 func TestGenerate_Generate_Good(t *T) {
 	subject := Generate
 	if subject == nil {

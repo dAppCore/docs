@@ -253,6 +253,86 @@ func BenchmarkSearch(b *B) {
 	}
 }
 
+func TestCatalog_All_Good(t *T) {
+	c := &Catalog{
+		topics: make(map[string]*Topic),
+		index:  newSearchIndex(),
+	}
+	c.Add(&Topic{ID: "alpha", Title: "Alpha"})
+	c.Add(&Topic{ID: "beta", Title: "Beta"})
+	c.Add(&Topic{ID: "gamma", Title: "Gamma"})
+
+	t.Run("iterates every topic", func(t *T) {
+		seen := make(map[string]bool)
+		for topic := range c.All() {
+			seen[topic.ID] = true
+		}
+		AssertLen(t, seen, 3)
+		AssertTrue(t, seen["alpha"])
+		AssertTrue(t, seen["beta"])
+		AssertTrue(t, seen["gamma"])
+	})
+
+	t.Run("early break stops iteration", func(t *T) {
+		count := 0
+		for range c.All() {
+			count++
+			break
+		}
+		AssertEqual(t, 1, count)
+	})
+}
+
+func TestCatalog_All_Good_Empty(t *T) {
+	c := &Catalog{
+		topics: make(map[string]*Topic),
+		index:  newSearchIndex(),
+	}
+	count := 0
+	for range c.All() {
+		count++
+	}
+	AssertEqual(t, 0, count)
+}
+
+func TestCatalog_SearchResults_Good(t *T) {
+	c := DefaultCatalog()
+
+	t.Run("yields matching results", func(t *T) {
+		var ids []string
+		for res := range c.SearchResults("configuration") {
+			ids = append(ids, res.Topic.ID)
+		}
+		AssertNotEmpty(t, ids)
+		AssertContains(t, ids, "config")
+	})
+
+	t.Run("no match yields nothing", func(t *T) {
+		count := 0
+		for range c.SearchResults("zzzyyyxxx") {
+			count++
+		}
+		AssertEqual(t, 0, count)
+	})
+}
+
+func TestCatalog_SearchResults_Good_EarlyBreak(t *T) {
+	// Add two topics with identical scoring content so SearchResults yields >1.
+	c := &Catalog{
+		topics: make(map[string]*Topic),
+		index:  newSearchIndex(),
+	}
+	c.Add(&Topic{ID: "one", Title: "Alpha", Content: "Unique keyword zephyr."})
+	c.Add(&Topic{ID: "two", Title: "Zebra", Content: "Unique keyword zephyr."})
+
+	count := 0
+	for range c.SearchResults("zephyr") {
+		count++
+		break
+	}
+	AssertEqual(t, 1, count, "break must stop the iterator after the first yield")
+}
+
 func TestCatalog_DefaultCatalog_Good(t *T) {
 	subject := DefaultCatalog
 	if subject == nil {

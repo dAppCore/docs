@@ -171,6 +171,34 @@ func TestRenderLayout_Good_EscapesHTML(t *T) {
 	AssertContains(t, html, "&lt;script&gt;")
 }
 
+func TestTopicTableOfContents_Good(t *T) {
+	sections := []Section{
+		{ID: "intro", Title: "Introduction", Level: 1},
+		{ID: "usage", Title: "Usage", Level: 2},
+	}
+	html := topicTableOfContents(sections)
+	AssertContains(t, html, "On this page")
+	AssertContains(t, html, `href="#intro"`)
+	AssertContains(t, html, `href="#usage"`)
+	AssertContains(t, html, "Introduction")
+}
+
+func TestTopicTableOfContents_Good_EmptySections(t *T) {
+	// The no-sections guard returns an empty string.
+	AssertEqual(t, "", topicTableOfContents(nil))
+	AssertEqual(t, "", topicTableOfContents([]Section{}))
+}
+
+func TestTopicTableOfContents_Ugly_EscapesHTML(t *T) {
+	// Section ID and title containing markup must be HTML-escaped.
+	sections := []Section{
+		{ID: `bad"id`, Title: `<script>alert(1)</script>`, Level: 1},
+	}
+	html := topicTableOfContents(sections)
+	AssertNotContains(t, html, "<script>alert(1)</script>")
+	AssertContains(t, html, "&lt;script&gt;")
+}
+
 func TestLayout_RenderIndexPage_Good(t *T) {
 	subject := RenderIndexPage
 	if subject == nil {
