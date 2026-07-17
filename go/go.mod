@@ -7,3 +7,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require dappco.re/go v0.11.0

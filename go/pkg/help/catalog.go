@@ -98,7 +98,7 @@ func LoadContentDir(dir string) core.Result {
 		index:  newSearchIndex(),
 	}
 
-	err := core.PathWalkDir(dir, func(path string, d core.FsDirEntry, err error) error {
+	r := core.PathWalkDir(dir, func(path string, d core.FsDirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -123,8 +123,8 @@ func LoadContentDir(dir string) core.Result {
 		c.Add(topicResult.Value.(*Topic))
 		return nil
 	})
-	if err != nil {
-		return core.Fail(core.E("catalog.LoadContentDir", core.Sprintf("walking directory %s", dir), err))
+	if !r.OK {
+		return core.Fail(core.E("catalog.LoadContentDir", core.Sprintf("walking directory %s", dir), r.Value.(error)))
 	}
 	return core.Ok(c)
 }
