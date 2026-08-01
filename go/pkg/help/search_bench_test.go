@@ -3,8 +3,6 @@ package help
 
 import (
 	. "dappco.re/go"
-	"fmt"
-	"strings"
 )
 
 // titleCase capitalises the first letter of a string.
@@ -13,7 +11,7 @@ func titleCase(s string) string {
 	if len(s) == 0 {
 		return s
 	}
-	return strings.ToUpper(s[:1]) + s[1:]
+	return Upper(s[:1]) + s[1:]
 }
 
 // buildLargeCatalog creates a search index with n topics for benchmarking.
@@ -43,8 +41,8 @@ func buildLargeCatalog(n int) *searchIndex {
 		verb := verbs[i%len(verbs)]
 		adj := adjectives[i%len(adjectives)]
 
-		title := fmt.Sprintf("%s %s Guide %d", titleCase(adj), titleCase(subj), i)
-		content := fmt.Sprintf(
+		title := Sprintf("%s %s Guide %d", titleCase(adj), titleCase(subj), i)
+		content := Sprintf(
 			"This guide covers how to %s %s %s systems. "+
 				"It includes step-by-step instructions for setting up %s "+
 				"in both development and production environments. "+
@@ -55,24 +53,24 @@ func buildLargeCatalog(n int) *searchIndex {
 
 		sections := []Section{
 			{
-				ID:      fmt.Sprintf("overview-%d", i),
+				ID:      Sprintf("overview-%d", i),
 				Title:   "Overview",
-				Content: fmt.Sprintf("An overview of %s %s patterns and best practices.", adj, subj),
+				Content: Sprintf("An overview of %s %s patterns and best practices.", adj, subj),
 			},
 			{
-				ID:      fmt.Sprintf("setup-%d", i),
-				Title:   fmt.Sprintf("%s Setup", titleCase(subj)),
-				Content: fmt.Sprintf("Detailed setup instructions for %s. Run the %s command to begin.", subj, verb),
+				ID:      Sprintf("setup-%d", i),
+				Title:   Sprintf("%s Setup", titleCase(subj)),
+				Content: Sprintf("Detailed setup instructions for %s. Run the %s command to begin.", subj, verb),
 			},
 			{
-				ID:      fmt.Sprintf("troubleshooting-%d", i),
+				ID:      Sprintf("troubleshooting-%d", i),
 				Title:   "Troubleshooting",
-				Content: fmt.Sprintf("Common issues when working with %s and how to resolve them.", subj),
+				Content: Sprintf("Common issues when working with %s and how to resolve them.", subj),
 			},
 		}
 
 		idx.Add(&Topic{
-			ID:       fmt.Sprintf("%s-%s-%d", adj, subj, i),
+			ID:       Sprintf("%s-%s-%d", adj, subj, i),
 			Title:    title,
 			Content:  content,
 			Sections: sections,

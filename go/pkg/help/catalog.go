@@ -1,14 +1,11 @@
 package help
 
 import (
-	"fmt"
-	"io/fs"
 	"iter"
 	"maps"
-	"os"
-	"path/filepath"
 	"slices"
-	"strings"
+
+	core "dappco.re/go"
 )
 
 // Catalog manages help topics.
@@ -95,48 +92,50 @@ func (c *Catalog) SearchResults(query string) iter.Seq[*SearchResult] {
 }
 
 // LoadContentDir recursively loads all .md files from a directory into a Catalog.
-func LoadContentDir(dir string) (*Catalog, error) {
+func LoadContentDir(dir string) core.Result {
 	c := &Catalog{
 		topics: make(map[string]*Topic),
 		index:  newSearchIndex(),
 	}
 
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+	// PathWalkDir returns a Result, not an error — the callback still deals in
+	// errors, which is why the two were easy to confuse here.
+	walk := core.PathWalkDir(dir, func(path string, d core.FsDirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(strings.ToLower(d.Name()), ".md") {
+		if !core.HasSuffix(core.Lower(d.Name()), ".md") {
 			return nil
 		}
 
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("catalog.LoadContentDir: reading %s: %w", path, err)
+		r := core.ReadFile(path)
+		if !r.OK {
+			return core.E("catalog.LoadContentDir", core.Sprintf("reading %s", path), r.Value.(error))
+		}
+		content := r.Value.([]byte)
+
+		topicResult := ParseTopic(path, content)
+		if !topicResult.OK {
+			return core.E("catalog.LoadContentDir", core.Sprintf("parsing %s", path), topicResult.Value.(error))
 		}
 
-		topic, err := ParseTopic(path, content)
-		if err != nil {
-			return fmt.Errorf("catalog.LoadContentDir: parsing %s: %w", path, err)
-		}
-
-		c.Add(topic)
+		c.Add(topicResult.Value.(*Topic))
 		return nil
 	})
-	if err != nil {
-		return nil, fmt.Errorf("catalog.LoadContentDir: walking directory %s: %w", dir, err)
+	if !walk.OK {
+		return core.Fail(core.E("catalog.LoadContentDir", core.Sprintf("walking directory %s", dir), walk.Value.(error)))
 	}
-
-	return c, nil
+	return core.Ok(c)
 }
 
 // Get returns a topic by ID.
-func (c *Catalog) Get(id string) (*Topic, error) {
+func (c *Catalog) Get(id string) core.Result {
 	t, ok := c.topics[id]
 	if !ok {
-		return nil, fmt.Errorf("catalog.Get: topic not found: %s", id)
+		return core.Fail(core.E("catalog.Get", core.Sprintf("topic not found: %s", id), nil))
 	}
-	return t, nil
+	return core.Ok(t)
 }

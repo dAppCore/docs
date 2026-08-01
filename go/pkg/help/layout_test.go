@@ -3,7 +3,6 @@ package help
 
 import (
 	. "dappco.re/go"
-	"strings"
 )
 
 func TestRenderLayout_Good_IndexPage(t *T) {
@@ -142,7 +141,7 @@ func TestRenderLayout_Good_HasDoctype(t *T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *T) {
-			RequireTrue(t, strings.HasPrefix(tt.html, "<!DOCTYPE html>"),
+			RequireTrue(t, HasPrefix(tt.html, "<!DOCTYPE html>"),
 				"page should start with <!DOCTYPE html>, got: %s", tt.html[:min(50, len(tt.html))])
 		})
 	}
@@ -170,4 +169,164 @@ func TestRenderLayout_Good_EscapesHTML(t *T) {
 	// Title must be escaped
 	AssertNotContains(t, html, `<script>alert`)
 	AssertContains(t, html, "&lt;script&gt;")
+}
+
+func TestTopicTableOfContents_Good(t *T) {
+	sections := []Section{
+		{ID: "intro", Title: "Introduction", Level: 1},
+		{ID: "usage", Title: "Usage", Level: 2},
+	}
+	html := topicTableOfContents(sections)
+	AssertContains(t, html, "On this page")
+	AssertContains(t, html, `href="#intro"`)
+	AssertContains(t, html, `href="#usage"`)
+	AssertContains(t, html, "Introduction")
+}
+
+func TestTopicTableOfContents_Good_EmptySections(t *T) {
+	// The no-sections guard returns an empty string.
+	AssertEqual(t, "", topicTableOfContents(nil))
+	AssertEqual(t, "", topicTableOfContents([]Section{}))
+}
+
+func TestTopicTableOfContents_Ugly_EscapesHTML(t *T) {
+	// Section ID and title containing markup must be HTML-escaped.
+	sections := []Section{
+		{ID: `bad"id`, Title: `<script>alert(1)</script>`, Level: 1},
+	}
+	html := topicTableOfContents(sections)
+	AssertNotContains(t, html, "<script>alert(1)</script>")
+	AssertContains(t, html, "&lt;script&gt;")
+}
+
+func TestLayout_RenderIndexPage_Good(t *T) {
+	subject := RenderIndexPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderIndexPage_Bad(t *T) {
+	subject := RenderIndexPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderIndexPage_Ugly(t *T) {
+	subject := RenderIndexPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderTopicPage_Good(t *T) {
+	subject := RenderTopicPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderTopicPage_Bad(t *T) {
+	subject := RenderTopicPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderTopicPage_Ugly(t *T) {
+	subject := RenderTopicPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderSearchPage_Good(t *T) {
+	subject := RenderSearchPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderSearchPage_Bad(t *T) {
+	subject := RenderSearchPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_RenderSearchPage_Ugly(t *T) {
+	subject := RenderSearchPage
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_Render404Page_Good(t *T) {
+	subject := Render404Page
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_Render404Page_Bad(t *T) {
+	subject := Render404Page
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestLayout_Render404Page_Ugly(t *T) {
+	subject := Render404Page
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
 }

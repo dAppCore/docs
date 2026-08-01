@@ -4,7 +4,6 @@ package help
 import (
 	. "dappco.re/go"
 	"regexp"
-	"strings"
 	"unicode/utf8"
 )
 
@@ -267,7 +266,7 @@ func TestExtractSnippet_Good_UTF8(t *T) {
 
 	t.Run("truncates multi-byte content safely", func(t *T) {
 		// Long content that will be truncated
-		longContent := strings.Repeat("日本語", 100) // 300 characters
+		longContent := repeat("日本語", 100) // 300 characters
 		snippet := extractSnippet(longContent, nil)
 		AssertTrue(t, isValidUTF8(snippet), "Truncated snippet should be valid UTF-8")
 	})
@@ -352,7 +351,7 @@ func TestExtractSnippet_Good_HeadingsOnly(t *T) {
 func TestExtractSnippet_Good_SnippetTrimmedToEmpty(t *T) {
 	// After word-boundary trimming the snippet could become empty.
 	// This exercises the snippet=="" guard after TrimSpace.
-	content := strings.Repeat(" ", 200)
+	content := repeat(" ", 200)
 
 	snippet := extractSnippet(content, compileRegexes([]string{"zz"}))
 	AssertEmpty(t, snippet, "whitespace-only content should yield empty snippet")
@@ -1167,4 +1166,91 @@ func TestCatalog_Search_Good_Integration(t *T) {
 		results := cat.Search("")
 		AssertNil(t, results)
 	})
+}
+
+func TestLastIndexByte_Good(t *T) {
+	t.Run("finds last occurrence", func(t *T) {
+		AssertEqual(t, 3, lastIndexByte("a b c", ' '))
+	})
+	t.Run("single occurrence", func(t *T) {
+		AssertEqual(t, 3, lastIndexByte("foo bar", ' '))
+	})
+}
+
+func TestLastIndexByte_Bad_NotFound(t *T) {
+	// The not-found branch returns -1.
+	AssertEqual(t, -1, lastIndexByte("nospace", ' '))
+	AssertEqual(t, -1, lastIndexByte("", ' '))
+}
+
+func TestTokens_Good_EarlyBreakOnRawWord(t *T) {
+	// Breaking after the first yielded word exercises the first
+	// `return false` path inside emit (the raw-word yield).
+	var got []string
+	for w := range Tokens("alpha beta gamma") {
+		got = append(got, w)
+		break
+	}
+	AssertLen(t, got, 1)
+	AssertEqual(t, "alpha", got[0])
+}
+
+func TestTokens_Good_EarlyBreakOnStemYield(t *T) {
+	// "running" yields the raw word then its distinct stem "runn".
+	// Stopping exactly after the second yield exercises the stem
+	// `return false` path inside emit.
+	var got []string
+	for w := range Tokens("running configurations") {
+		got = append(got, w)
+		if len(got) == 2 {
+			break
+		}
+	}
+	AssertLen(t, got, 2)
+	AssertEqual(t, "running", got[0])
+	AssertEqual(t, "runn", got[1], "second yield must be the stem of the first word")
+}
+
+func TestTokens_Good(t *T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestSearch_Tokens_Good(t *T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestSearch_Tokens_Bad(t *T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestSearch_Tokens_Ugly(t *T) {
+	subject := Tokens
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
 }

@@ -78,6 +78,47 @@ func TestStem_GuardMinLength(t *T) {
 	AssertNotEqual(t, "a", result)
 }
 
+func TestStemDerivational_Ugly_OverStripGuard(t *T) {
+	// A word that is itself a derivational suffix would strip to the empty
+	// string ("ness" -> ""), which is shorter than 2 chars. The over-strip
+	// guard must return the word unchanged instead.
+	AssertEqual(t, "ness", stemDerivational("ness"))
+	AssertEqual(t, "ment", stemDerivational("ment"))
+}
+
+func TestStemDerivational_Good(t *T) {
+	t.Run("strips when result stays >= 2 chars", func(t *T) {
+		AssertEqual(t, "ate", stemDerivational("ation"))
+		AssertEqual(t, "al", stemDerivational("ally"))
+		AssertEqual(t, "ize", stemDerivational("izer"))
+	})
+	t.Run("no matching suffix returns input", func(t *T) {
+		AssertEqual(t, "alpha", stemDerivational("alpha"))
+	})
+}
+
+func TestStemInflectional_Good(t *T) {
+	t.Run("sses to ss", func(t *T) {
+		AssertEqual(t, "ss", stemInflectional("sses"))
+	})
+	t.Run("ies to i", func(t *T) {
+		AssertEqual(t, "poni", stemInflectional("ponies"))
+	})
+	t.Run("eed to ee", func(t *T) {
+		AssertEqual(t, "agree", stemInflectional("agreed"))
+	})
+	t.Run("ing guard keeps short stems intact", func(t *T) {
+		// "iing" -> "i" would be < 2, so the inflectional guard leaves it.
+		AssertEqual(t, "iing", stemInflectional("iing"))
+	})
+	t.Run("ed guard keeps short stems intact", func(t *T) {
+		AssertEqual(t, "aed", stemInflectional("aed"))
+	})
+	t.Run("ss not treated as plural s", func(t *T) {
+		AssertEqual(t, "boss", stemInflectional("boss"))
+	})
+}
+
 // ---------------------------------------------------------------------------
 // Search integration tests — stemming recall
 // ---------------------------------------------------------------------------
