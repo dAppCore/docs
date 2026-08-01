@@ -1,5 +1,10 @@
 site/
 .cache/
 .DS_Store
-.core/
 .idea/
+.core/workspace/
+.core/vm/
+.core/cache/
+.core/runtime/
+.core/*.duckdb*
+.core/coderabbit-findings.txt

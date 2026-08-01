@@ -2,8 +2,7 @@
 package help
 
 import (
-	"bytes"
-
+	core "dappco.re/go"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer/html"
@@ -16,7 +15,7 @@ import (
 //
 // The returned string is an HTML fragment without <html>/<body> wrappers;
 // the server templates handle the page structure.
-func RenderMarkdown(content string) (string, error) {
+func RenderMarkdown(content string) core.Result {
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM,
@@ -27,10 +26,9 @@ func RenderMarkdown(content string) (string, error) {
 		),
 	)
 
-	var buf bytes.Buffer
+	var buf core.Buffer
 	if err := md.Convert([]byte(content), &buf); err != nil {
-		return "", err
+		return core.Fail(core.E("help.RenderMarkdown", "convert markdown", err))
 	}
-
-	return buf.String(), nil
+	return core.Ok(buf.String())
 }

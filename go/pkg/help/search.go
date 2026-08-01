@@ -5,8 +5,9 @@ import (
 	"iter"
 	"regexp"
 	"slices"
-	"strings"
 	"unicode"
+
+	core "dappco.re/go"
 )
 
 // Scoring weights for search result ranking.
@@ -127,7 +128,7 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 
 		// Prefix matches (partial word matching)
 		for indexWord, topicIDs := range i.index {
-			if strings.HasPrefix(indexWord, word) && indexWord != word {
+			if core.HasPrefix(indexWord, word) && indexWord != word {
 				for _, topicID := range topicIDs {
 					scores[topicID] += scorePrefixWord
 				}
@@ -140,7 +141,7 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 				if indexWord == word {
 					continue // Already scored as exact match
 				}
-				if strings.HasPrefix(indexWord, word) {
+				if core.HasPrefix(indexWord, word) {
 					continue // Already scored as prefix match
 				}
 				dist := levenshtein(word, indexWord)
@@ -171,14 +172,14 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 
 	// Phrase matching: boost topics that contain the exact phrase.
 	for _, phrase := range phrases {
-		phraseLower := strings.ToLower(phrase)
+		phraseLower := core.Lower(phrase)
 		for topicID, topic := range i.topics {
-			var text strings.Builder
-			text.WriteString(strings.ToLower(topic.Title + " " + topic.Content))
+			var text core.Builder
+			text.WriteString(core.Lower(topic.Title + " " + topic.Content))
 			for _, section := range topic.Sections {
-				text.WriteString(" " + strings.ToLower(section.Title+" "+section.Content))
+				text.WriteString(" " + core.Lower(section.Title+" "+section.Content))
 			}
-			if strings.Contains(text.String(), phraseLower) {
+			if core.Contains(text.String(), phraseLower) {
 				scores[topicID] += scorePhraseBoost
 			}
 		}
@@ -193,10 +194,10 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 		}
 
 		// Title boost: if query words appear in title
-		titleLower := strings.ToLower(topic.Title)
+		titleLower := core.Lower(topic.Title)
 		titleMatchCount := 0
 		for _, word := range queryWords {
-			if strings.Contains(titleLower, word) {
+			if core.Contains(titleLower, word) {
 				titleMatchCount++
 			}
 		}
@@ -206,9 +207,9 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 
 		// Tag boost: if query words match tags
 		for _, tag := range topic.Tags {
-			tagLower := strings.ToLower(tag)
+			tagLower := core.Lower(tag)
 			for _, word := range queryWords {
-				if tagLower == word || strings.Contains(tagLower, word) {
+				if tagLower == word || core.Contains(tagLower, word) {
 					score += scoreTagBoost
 					break
 				}
@@ -218,9 +219,9 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 		// Multi-word bonus: if all query words are present in the topic
 		if len(queryWords) > 1 {
 			allPresent := true
-			fullText := strings.ToLower(topic.Title + " " + topic.Content)
+			fullText := core.Lower(topic.Title + " " + topic.Content)
 			for _, word := range queryWords {
-				if !strings.Contains(fullText, word) {
+				if !core.Contains(fullText, word) {
 					allPresent = false
 					break
 				}
@@ -235,10 +236,10 @@ func (i *searchIndex) Search(query string) []*SearchResult {
 
 		// Section title boost
 		if section != nil {
-			sectionTitleLower := strings.ToLower(section.Title)
+			sectionTitleLower := core.Lower(section.Title)
 			hasSectionTitleMatch := false
 			for _, word := range queryWords {
-				if strings.Contains(sectionTitleLower, word) {
+				if core.Contains(sectionTitleLower, word) {
 					hasSectionTitleMatch = true
 					break
 				}
@@ -275,13 +276,25 @@ func extractPhrases(query string) (phrases []string, remaining string) {
 	re := regexp.MustCompile(`"([^"]+)"`)
 	matches := re.FindAllStringSubmatch(query, -1)
 	for _, m := range matches {
-		phrase := strings.TrimSpace(m[1])
+		phrase := core.Trim(m[1])
 		if phrase != "" {
 			phrases = append(phrases, phrase)
 		}
 	}
 	remaining = re.ReplaceAllString(query, "")
 	return phrases, remaining
+}
+
+// lastIndexByte returns the byte offset of the last instance of c in s,
+// or -1 if c is not present. Equivalent of strings.LastIndex(s, string(c))
+// for a single byte; no core wrapper exists in dappco.re/go for LastIndex.
+func lastIndexByte(s string, c byte) int {
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == c {
+			return i
+		}
+	}
+	return -1
 }
 
 // levenshtein computes the edit distance between two strings.
@@ -374,8 +387,8 @@ func tokenize(text string) []string {
 // Tokens returns an iterator for lowercase words in text.
 func Tokens(text string) iter.Seq[string] {
 	return func(yield func(string) bool) {
-		text = strings.ToLower(text)
-		var word strings.Builder
+		text = core.Lower(text)
+		var word core.Builder
 
 		emit := func(w string) bool {
 			if len(w) < 2 {
@@ -412,10 +425,10 @@ func Tokens(text string) iter.Seq[string] {
 
 // countMatches counts how many query words appear in the text.
 func countMatches(text string, queryWords []string) int {
-	textLower := strings.ToLower(text)
+	textLower := core.Lower(text)
 	count := 0
 	for _, word := range queryWords {
-		if strings.Contains(textLower, word) {
+		if core.Contains(textLower, word) {
 			count++
 		}
 	}
@@ -432,10 +445,9 @@ func extractSnippet(content string, res []*regexp.Regexp) string {
 
 	// If no regexes, return start of content without highlighting
 	if len(res) == 0 {
-		lines := strings.SplitSeq(content, "\n")
-		for line := range lines {
-			line = strings.TrimSpace(line)
-			if line != "" && !strings.HasPrefix(line, "#") {
+		for _, line := range core.Split(content, "\n") {
+			line = core.Trim(line)
+			if line != "" && !core.HasPrefix(line, "#") {
 				runes := []rune(line)
 				if len(runes) > snippetLen {
 					return string(runes[:snippetLen]) + "..."
@@ -480,19 +492,19 @@ func extractSnippet(content string, res []*regexp.Regexp) string {
 	prefix := ""
 	suffix := ""
 	if start > 0 {
-		if idx := strings.Index(snippet, " "); idx != -1 {
+		if idx := core.Index(snippet, " "); idx != -1 {
 			snippet = snippet[idx+1:]
 			prefix = "..."
 		}
 	}
 	if end < runeLen {
-		if idx := strings.LastIndex(snippet, " "); idx != -1 {
+		if idx := lastIndexByte(snippet, ' '); idx != -1 {
 			snippet = snippet[:idx]
 			suffix = "..."
 		}
 	}
 
-	snippet = strings.TrimSpace(snippet)
+	snippet = core.Trim(snippet)
 	if snippet == "" {
 		return ""
 	}

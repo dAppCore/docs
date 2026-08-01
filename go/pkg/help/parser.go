@@ -2,14 +2,68 @@ package help
 
 import (
 	"iter"
-	"path/filepath"
 	"regexp"
 	"slices"
-	"strings"
 	"unicode"
 
+	core "dappco.re/go"
 	"gopkg.in/yaml.v3"
 )
+
+// countSubstring returns the number of non-overlapping occurrences of substr
+// in s. Equivalent of strings.Count without importing strings; no core
+// wrapper exists in dappco.re/go.
+func countSubstring(s, substr string) int {
+	if substr == "" {
+		return len(s) + 1
+	}
+	count := 0
+	start := 0
+	for {
+		idx := core.Index(s[start:], substr)
+		if idx < 0 {
+			return count
+		}
+		count++
+		start += idx + len(substr)
+	}
+}
+
+// repeat returns a string consisting of n copies of s. Equivalent of
+// strings.Repeat without importing strings; no core wrapper exists in
+// dappco.re/go.
+func repeat(s string, n int) string {
+	if n <= 0 {
+		return ""
+	}
+	out := make([]byte, 0, len(s)*n)
+	for i := 0; i < n; i++ {
+		out = append(out, s...)
+	}
+	return string(out)
+}
+
+// fields splits s around runs of unicode.IsSpace whitespace, returning a
+// slice of non-empty substrings. Equivalent of strings.Fields without
+// importing strings; no core wrapper exists in dappco.re/go.
+func fields(s string) []string {
+	var out []string
+	start := -1
+	for i, r := range s {
+		if unicode.IsSpace(r) {
+			if start >= 0 {
+				out = append(out, s[start:i])
+				start = -1
+			}
+		} else if start < 0 {
+			start = i
+		}
+	}
+	if start >= 0 {
+		out = append(out, s[start:])
+	}
+	return out
+}
 
 var (
 	// frontmatterRegex matches YAML frontmatter delimited by ---
@@ -21,7 +75,7 @@ var (
 )
 
 // ParseTopic parses a markdown file into a Topic.
-func ParseTopic(path string, content []byte) (*Topic, error) {
+func ParseTopic(path string, content []byte) core.Result {
 	contentStr := string(content)
 
 	topic := &Topic{
@@ -60,7 +114,7 @@ func ParseTopic(path string, content []byte) (*Topic, error) {
 		}
 	}
 
-	return topic, nil
+	return core.Ok(topic)
 }
 
 // ExtractFrontmatter extracts YAML frontmatter from markdown content.
@@ -90,20 +144,20 @@ func ExtractSections(content string) []Section {
 // AllSections returns an iterator for markdown sections.
 func AllSections(content string) iter.Seq[Section] {
 	return func(yield func(Section) bool) {
-		lines := strings.SplitSeq(content, "\n")
+		lines := core.Split(content, "\n")
 
 		var currentSection *Section
 		var contentLines []string
 
 		i := 0
-		for line := range lines {
+		for _, line := range lines {
 			lineNum := i + 1 // 1-indexed
 
 			match := headingRegex.FindStringSubmatch(line)
 			if match != nil {
 				// Save previous section's content
 				if currentSection != nil {
-					currentSection.Content = strings.TrimSpace(strings.Join(contentLines, "\n"))
+					currentSection.Content = core.Trim(core.Join("\n", contentLines...))
 					if !yield(*currentSection) {
 						return
 					}
@@ -111,7 +165,7 @@ func AllSections(content string) iter.Seq[Section] {
 
 				// Start new section
 				level := len(match[1])
-				title := strings.TrimSpace(match[2])
+				title := core.Trim(match[2])
 
 				section := Section{
 					ID:    GenerateID(title),
@@ -130,7 +184,7 @@ func AllSections(content string) iter.Seq[Section] {
 
 		// Save last section's content
 		if currentSection != nil {
-			currentSection.Content = strings.TrimSpace(strings.Join(contentLines, "\n"))
+			currentSection.Content = core.Trim(core.Join("\n", contentLines...))
 			yield(*currentSection)
 		}
 	}
@@ -139,9 +193,9 @@ func AllSections(content string) iter.Seq[Section] {
 // GenerateID creates a URL-safe ID from a title.
 // "Getting Started" -> "getting-started"
 func GenerateID(title string) string {
-	var result strings.Builder
+	var result core.Builder
 
-	for _, r := range strings.ToLower(title) {
+	for _, r := range core.Lower(title) {
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
 			result.WriteRune(r)
 		} else if unicode.IsSpace(r) || r == '-' || r == '_' {
@@ -156,31 +210,31 @@ func GenerateID(title string) string {
 
 	// Trim trailing hyphens
 	str := result.String()
-	return strings.Trim(str, "-")
+	return core.TrimCutset(str, "-")
 }
 
 // pathToTitle converts a file path to a title.
 // "getting-started.md" -> "Getting Started"
 func pathToTitle(path string) string {
 	// Get filename without directory (cross-platform)
-	filename := filepath.Base(path)
+	filename := core.PathBase(path)
 
 	// Remove extension
-	if ext := filepath.Ext(filename); ext != "" {
-		filename = strings.TrimSuffix(filename, ext)
+	if ext := core.PathExt(filename); ext != "" {
+		filename = core.TrimSuffix(filename, ext)
 	}
 
 	// Replace hyphens/underscores with spaces
-	filename = strings.ReplaceAll(filename, "-", " ")
-	filename = strings.ReplaceAll(filename, "_", " ")
+	filename = core.Replace(filename, "-", " ")
+	filename = core.Replace(filename, "_", " ")
 
 	// Title case
-	words := strings.Fields(filename)
+	words := fields(filename)
 	for i, word := range words {
 		if len(word) > 0 {
-			words[i] = strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
+			words[i] = core.Upper(string(word[0])) + core.Lower(word[1:])
 		}
 	}
 
-	return strings.Join(words, " ")
+	return core.Join(" ", words...)
 }

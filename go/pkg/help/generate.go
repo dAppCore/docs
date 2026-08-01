@@ -2,9 +2,7 @@
 package help
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
+	core "dappco.re/go"
 )
 
 // searchIndexEntry represents a single topic in the client-side search index.
@@ -24,56 +22,44 @@ type searchIndexEntry struct {
 //   - 404.html              -- not found page
 //
 // All CSS is inlined; no external stylesheets are needed.
-func Generate(catalog *Catalog, outputDir string) error {
+func Generate(catalog *Catalog, outputDir string) core.Result {
 	topics := catalog.List()
 
-	// Ensure output directories exist.
-	topicsDir := filepath.Join(outputDir, "topics")
-	if err := os.MkdirAll(topicsDir, 0o755); err != nil {
-		return err
+	topicsDir := core.PathJoin(outputDir, "topics")
+	if r := core.MkdirAll(topicsDir, 0o755); !r.OK {
+		return r
 	}
 
-	// 1. index.html
-	if err := writeFile(outputDir, "index.html", RenderIndexPage(topics)); err != nil {
-		return err
+	if r := writeFile(outputDir, "index.html", RenderIndexPage(topics)); !r.OK {
+		return r
 	}
-
-	// 2. topics/{id}.html -- one per topic
 	for _, t := range topics {
-		if err := writeFile(topicsDir, t.ID+".html", RenderTopicPage(t, topics)); err != nil {
-			return err
+		if r := writeFile(topicsDir, t.ID+".html", RenderTopicPage(t, topics)); !r.OK {
+			return r
 		}
 	}
-
-	// 3. search.html -- client-side search page
-	if err := writeFile(outputDir, "search.html", RenderSearchPage("", nil)+clientSearchScript); err != nil {
-		return err
+	if r := writeFile(outputDir, "search.html", RenderSearchPage("", nil)+clientSearchScript); !r.OK {
+		return r
 	}
-
-	// 4. search-index.json
-	if err := writeSearchIndex(outputDir, topics); err != nil {
-		return err
+	if r := writeSearchIndex(outputDir, topics); !r.OK {
+		return r
 	}
-
-	// 5. 404.html
-	if err := writeFile(outputDir, "404.html", Render404Page()); err != nil {
-		return err
+	if r := writeFile(outputDir, "404.html", Render404Page()); !r.OK {
+		return r
 	}
-
-	return nil
+	return core.Ok(nil)
 }
 
 // writeFile writes content to a file in the given directory.
-func writeFile(dir, filename, content string) error {
-	path := filepath.Join(dir, filename)
-	return os.WriteFile(path, []byte(content), 0o644)
+func writeFile(dir, filename, content string) core.Result {
+	path := core.PathJoin(dir, filename)
+	return core.WriteFile(path, []byte(content), 0o644)
 }
 
 // writeSearchIndex writes the JSON search index for client-side search.
-func writeSearchIndex(outputDir string, topics []*Topic) error {
+func writeSearchIndex(outputDir string, topics []*Topic) core.Result {
 	entries := make([]searchIndexEntry, 0, len(topics))
 	for _, t := range topics {
-		// Truncate content for the index to keep file size reasonable.
 		content := t.Content
 		runes := []rune(content)
 		if len(runes) > 500 {
@@ -87,16 +73,14 @@ func writeSearchIndex(outputDir string, topics []*Topic) error {
 		})
 	}
 
-	path := filepath.Join(outputDir, "search-index.json")
-	f, err := os.Create(path)
-	if err != nil {
-		return err
+	path := core.PathJoin(outputDir, "search-index.json")
+	r := core.JSONMarshalIndent(entries, "", "  ")
+	if !r.OK {
+		return r
 	}
-	defer f.Close()
-
-	enc := json.NewEncoder(f)
-	enc.SetIndent("", "  ")
-	return enc.Encode(entries)
+	// Append newline to match json.Encoder.Encode trailing-newline behaviour.
+	data := append(r.Value.([]byte), '\n')
+	return core.WriteFile(path, data, 0o644)
 }
 
 // clientSearchScript is the inline JS for static-site client-side search.

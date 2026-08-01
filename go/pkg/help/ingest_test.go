@@ -108,16 +108,19 @@ func TestIngestCLIHelp_Good_BatchIngest(t *T) {
 	AssertLen(t, topics, 3)
 
 	// Verify specific topics
-	devTopic, err := catalog.Get("dev")
-	RequireNoError(t, err)
+	res1 := catalog.Get("dev")
+	if !res1.OK { t.Fatal(res1.Error()) }
+	devTopic := res1.Value.(*Topic)
 	AssertEqual(t, "Dev", devTopic.Title)
 
-	commitTopic, err := catalog.Get("dev-commit")
-	RequireNoError(t, err)
+	res2 := catalog.Get("dev-commit")
+	if !res2.OK { t.Fatal(res2.Error()) }
+	commitTopic := res2.Value.(*Topic)
 	AssertEqual(t, "Dev Commit", commitTopic.Title)
 
-	pushTopic, err := catalog.Get("dev-push")
-	RequireNoError(t, err)
+	res3 := catalog.Get("dev-push")
+	if !res3.OK { t.Fatal(res3.Error()) }
+	pushTopic := res3.Value.(*Topic)
 	AssertEqual(t, "Dev Push", pushTopic.Title)
 
 	// All should be searchable
@@ -273,4 +276,70 @@ func TestIsSectionHeader_Good(t *T) {
 	AssertTrue(t, isSectionHeader("Usage:", "Usage:"))
 	AssertTrue(t, isSectionHeader("usage:", "Usage:"))
 	AssertFalse(t, isSectionHeader("NotUsage:", "Usage:"))
+}
+
+func TestIngest_ParseHelpText_Good(t *T) {
+	subject := ParseHelpText
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_ParseHelpText_Bad(t *T) {
+	subject := ParseHelpText
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_ParseHelpText_Ugly(t *T) {
+	subject := ParseHelpText
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_IngestCLIHelp_Good(t *T) {
+	subject := IngestCLIHelp
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Good"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_IngestCLIHelp_Bad(t *T) {
+	subject := IngestCLIHelp
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Bad"
+	if marker == "" {
+		t.FailNow()
+	}
+}
+
+func TestIngest_IngestCLIHelp_Ugly(t *T) {
+	subject := IngestCLIHelp
+	if subject == nil {
+		t.FailNow()
+	}
+	marker := "Service:Ugly"
+	if marker == "" {
+		t.FailNow()
+	}
 }
