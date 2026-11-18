@@ -1,7 +1,7 @@
 // SPDX-Licence-Identifier: EUPL-1.2
 package help
 
-import core "dappco.re/go"
+import core "github.com/dappcore/go"
 
 // stem performs lightweight Porter-style suffix stripping on an English word.
 // Words shorter than 4 characters are returned unchanged. The result is

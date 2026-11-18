@@ -1,7 +1,7 @@
 package help
 
 import (
-	. "dappco.re/go"
+	. "github.com/dappcore/go"
 )
 
 func TestTopic_Topic_Good(t *T) {

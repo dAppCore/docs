@@ -2,7 +2,7 @@
 package help
 
 import (
-	. "dappco.re/go"
+	. "github.com/dappcore/go"
 )
 
 func TestGroupTopicsByTag_Good(t *T) {

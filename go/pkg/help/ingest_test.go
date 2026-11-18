@@ -2,7 +2,7 @@
 package help
 
 import (
-	. "dappco.re/go"
+	. "github.com/dappcore/go"
 )
 
 func TestParseHelpText_Good_StandardGoFlags(t *T) {

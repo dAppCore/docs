@@ -1,4 +1,4 @@
-[![Go Reference](https://pkg.go.dev/badge/dappco.re/go/core/docs.svg)](https://pkg.go.dev/dappco.re/go/core/docs)
+[![Go Reference](https://pkg.go.dev/badge/github.com/dappcore/docs/go.svg)](https://pkg.go.dev/github.com/dappcore/docs/go)
 [![License: EUPL-1.2](https://img.shields.io/badge/License-EUPL--1.2-blue.svg)](LICENCE)
 [![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?style=flat&logo=go)](go/go.mod)
 
@@ -6,7 +6,7 @@
 
 Documentation platform for the Core ecosystem (CLI, Go packages, PHP modules, MCP tools). Published at https://core.help.
 
-**Module**: `dappco.re/go/core/docs`
+**Module**: `github.com/dappcore/docs/go`
 **Licence**: EUPL-1.2
 **Language**: Go 1.26 (library) + Python 3 (site build via zensical)
 
@@ -28,7 +28,7 @@ zensical build
 ### Use the Go help library
 
 ```go
-import help "dappco.re/go/core/docs/pkg/help"
+import help "github.com/dappcore/docs/go/pkg/help"
 
 cat, err := help.LoadContentDir("docs/")
 if err != nil { panic(err) }

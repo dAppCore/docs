@@ -4,7 +4,7 @@ package help
 import (
 	"html"
 
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 )
 
 // pageCSS is the shared dark-theme stylesheet embedded in every page.

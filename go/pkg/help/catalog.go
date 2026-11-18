@@ -5,7 +5,7 @@ import (
 	"maps"
 	"slices"
 
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 )
 
 // Catalog manages help topics.

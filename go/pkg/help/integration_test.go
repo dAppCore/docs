@@ -2,7 +2,7 @@
 package help
 
 import (
-	. "dappco.re/go"
+	. "github.com/dappcore/go"
 )
 
 func TestIntegration_Good_FullPipeline(t *T) {

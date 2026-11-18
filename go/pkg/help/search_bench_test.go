@@ -2,7 +2,7 @@
 package help
 
 import (
-	. "dappco.re/go"
+	. "github.com/dappcore/go"
 )
 
 // titleCase capitalises the first letter of a string.

@@ -2,11 +2,11 @@
 package help
 
 import (
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 )
 
 // cutPrefix is equivalent of strings.CutPrefix without importing strings;
-// no core wrapper exists in dappco.re/go.
+// no core wrapper exists in github.com/dappcore/go.
 func cutPrefix(s, prefix string) (after string, found bool) {
 	if !core.HasPrefix(s, prefix) {
 		return s, false
