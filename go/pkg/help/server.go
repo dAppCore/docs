@@ -4,7 +4,7 @@ package help
 import (
 	"net/http"
 
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 )
 
 // writeJSON marshals v as JSON and writes it to w. If marshalling fails, an

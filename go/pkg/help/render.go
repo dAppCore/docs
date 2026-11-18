@@ -2,7 +2,7 @@
 package help
 
 import (
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer/html"

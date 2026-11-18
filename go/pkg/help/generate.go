@@ -2,7 +2,7 @@
 package help
 
 import (
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 )
 
 // searchIndexEntry represents a single topic in the client-side search index.

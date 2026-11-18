@@ -5,14 +5,14 @@ description: Dependency injection, service lifecycle, and permission framework f
 
 # Core Go Framework
 
-Core (`dappco.re/go/core`) is a dependency injection, service lifecycle, and permission framework for Go. It provides a typed service registry, lifecycle hooks, a message-passing bus, named actions with task composition, and an entitlement primitive for permission gating.
+Core (`github.com/dappcore/go`) is a dependency injection, service lifecycle, and permission framework for Go. It provides a typed service registry, lifecycle hooks, a message-passing bus, named actions with task composition, and an entitlement primitive for permission gating.
 
 This is the foundation layer of the ecosystem. It has no CLI, no GUI, and minimal dependencies (stdlib + go-io + go-log).
 
 ## Installation
 
 ```bash
-go get dappco.re/go/core
+go get github.com/dappcore/go
 ```
 
 Requires Go 1.26 or later.
@@ -22,7 +22,7 @@ Requires Go 1.26 or later.
 ```go
 package main
 
-import "dappco.re/go/core"
+import "github.com/dappcore/go"
 
 func main() {
     c := core.New(
@@ -234,8 +234,8 @@ The full API contract lives in [`docs/RFC.md`](https://forge.lthn.ai/core/go/src
 
 Core is deliberately minimal:
 
-- `dappco.re/go/core/io` — abstract storage (local, S3, SFTP, WebDAV)
-- `dappco.re/go/core/log` — structured logging
+- `github.com/dappcore/go-io/go` — abstract storage (local, S3, SFTP, WebDAV)
+- `github.com/dappcore/go-log/go` — structured logging
 - `github.com/stretchr/testify` — test assertions (test-only)
 
 ## Licence

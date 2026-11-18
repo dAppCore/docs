@@ -7,7 +7,7 @@ import (
 	"slices"
 	"unicode"
 
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 )
 
 // Scoring weights for search result ranking.
@@ -287,7 +287,7 @@ func extractPhrases(query string) (phrases []string, remaining string) {
 
 // lastIndexByte returns the byte offset of the last instance of c in s,
 // or -1 if c is not present. Equivalent of strings.LastIndex(s, string(c))
-// for a single byte; no core wrapper exists in dappco.re/go for LastIndex.
+// for a single byte; no core wrapper exists in github.com/dappcore/go for LastIndex.
 func lastIndexByte(s string, c byte) int {
 	for i := len(s) - 1; i >= 0; i-- {
 		if s[i] == c {

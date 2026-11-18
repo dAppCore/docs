@@ -18,9 +18,9 @@
 
 ## Ecosystem
 
-- core/go (dappco.re/go/core) — Go DI framework, service lifecycle, IPC
-- core/agent (dappco.re/go/agent) — AI agent orchestration, dispatch, verify
-- core/mcp (dappco.re/go/mcp) — Model Context Protocol server
+- core/go (github.com/dappcore/go) — Go DI framework, service lifecycle, IPC
+- core/agent (github.com/dappcore/agent/go) — AI agent orchestration, dispatch, verify
+- core/mcp (github.com/dappcore/mcp/go) — Model Context Protocol server
 - core-php — Laravel package ecosystem (18 packages)
 
 ## Conventions

@@ -66,6 +66,6 @@ Forgejo workflow at `.forgejo/workflows/deploy.yml`:
 ## Conventions
 
 - Licence: EUPL-1.2 (SPDX headers in source files)
-- Go module: `dappco.re/go/core/docs`
+- Go module: `github.com/dappcore/docs/go`
 - Markdown frontmatter fields: `title`, `tags`, `related`, `order`
 - See `AGENTS.md` for agent-specific workflow notes

@@ -6,13 +6,13 @@ import (
 	"slices"
 	"unicode"
 
-	core "dappco.re/go"
+	core "github.com/dappcore/go"
 	"gopkg.in/yaml.v3"
 )
 
 // countSubstring returns the number of non-overlapping occurrences of substr
 // in s. Equivalent of strings.Count without importing strings; no core
-// wrapper exists in dappco.re/go.
+// wrapper exists in github.com/dappcore/go.
 func countSubstring(s, substr string) int {
 	if substr == "" {
 		return len(s) + 1
@@ -31,7 +31,7 @@ func countSubstring(s, substr string) int {
 
 // repeat returns a string consisting of n copies of s. Equivalent of
 // strings.Repeat without importing strings; no core wrapper exists in
-// dappco.re/go.
+// github.com/dappcore/go.
 func repeat(s string, n int) string {
 	if n <= 0 {
 		return ""
@@ -45,7 +45,7 @@ func repeat(s string, n int) string {
 
 // fields splits s around runs of unicode.IsSpace whitespace, returning a
 // slice of non-empty substrings. Equivalent of strings.Fields without
-// importing strings; no core wrapper exists in dappco.re/go.
+// importing strings; no core wrapper exists in github.com/dappcore/go.
 func fields(s string) []string {
 	var out []string
 	start := -1
